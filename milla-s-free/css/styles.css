@@ -48,6 +48,7 @@ html.dark {
 body {
     background-color: var(--bg-main);
     color: var(--text-primary);
+    font-family: 'Poppins', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background-color 0.3s, color 0.3s;
@@ -295,6 +296,10 @@ input:focus, select:focus {
     outline: none;
     border-color: var(--accent-purple);
     box-shadow: 0 0 0 3px rgba(138, 92, 246, 0.2);
+}
+
+html.dark input, html.dark select {
+    background-color: var(--bg-card);
 }
 
 /* Oculta os botões de "spin" (setas de aumentar/diminuir) nos inputs do tipo number */
