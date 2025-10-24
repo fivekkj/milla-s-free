@@ -421,6 +421,12 @@ html:not(.dark) .modal-backdrop {
 .calculator-result {
     background-color: var(--bg-main);
 }
+.loss-amount {
+    word-break: break-word; /* Permite quebrar a palavra/número se necessário */
+    hyphens: auto;          /* Ajuda na quebra de linha (suporte varia entre navegadores) */
+    overflow-wrap: break-word; /* Garante a quebra em mais cenários */
+}
+
 
 /* --- Sandbox Section --- */
 .sandbox-chart-container {
