@@ -79,21 +79,22 @@ function initDashboardPage(user) {
 
     initUIElements();
 
-    projectInput.disabled = false;
+    // A lógica do timer foi removida do painel principal, então verificamos se os elementos existem.
+    if (projectInput) {
+        projectInput.disabled = false;
+    }
+
     fetchTimeEntriesPage('first');
     setupMembersListener();
     setupRealtimeChart();
     setupTasksListener();
 
-    timer = new Timer(
-        document.getElementById('timer-display'),
-        document.getElementById('start-button'),
-        document.getElementById('stop-button'),
-        document.getElementById('project-input'),
-        saveTimeEntry
-    );
+    // Inicializa o timer apenas se os elementos existirem na página
+    if (timerDisplay && startButton && stopButton && projectInput) {
+        timer = new Timer(timerDisplay, startButton, stopButton, projectInput, saveTimeEntry);
+        startButton.addEventListener('click', handleStartTimer);
+    }
 
-    if (startButton) startButton.addEventListener('click', handleStartTimer);
     if (saveEditButton) saveEditButton.addEventListener('click', saveEditedEntry);
     if (cancelEditButton) cancelEditButton.addEventListener('click', () => editModal.classList.add('hidden'));
     
@@ -229,6 +230,7 @@ async function saveTimeEntry(projectName, duration) {
 }
 
 function renderTimeEntries(entries) {
+    console.log("Rendering time entries. Entries received:", entries);
     timeEntriesTbody.innerHTML = '';
     if (entries.length === 0) {
         timeEntriesTbody.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-secondary">Nenhuma entrada de tempo encontrada.</td></tr>`;
@@ -276,6 +278,10 @@ function renderCurrentPage(entries) {
 async function fetchTimeEntriesPage(direction) {
     if (!db || !userId) return;
 
+    console.log("Fetching time entries for userId:", userId);
+    console.log("Current page:", currentPage, "Direction:", direction);
+    console.log("Selected member filter:", selectedMemberId);
+
     let q;
     let baseQuery = [
         collection(db, 'timeEntries'),
@@ -312,13 +318,16 @@ async function fetchTimeEntriesPage(direction) {
     }
 
     try {
+        console.log("Executing query with baseQuery:", baseQuery);
         const documentSnapshots = await getDocs(q);
         lastDocOnPage = documentSnapshots.docs[documentSnapshots.docs.length - 1];
         const entries = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderCurrentPage(entries);
     } catch (error) {
+        // Adiciona uma mensagem de erro mais visível na tabela
         console.error("Erro ao buscar entradas de tempo:", error);
         showMessageModal("Não foi possível carregar as entradas de tempo.");
+        timeEntriesTbody.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-red-500">Erro ao carregar entradas de tempo. Verifique o console para detalhes.</td></tr>`;
     }
 }
 
