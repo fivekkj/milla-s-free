@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milla's Free - Rastreamento Inteligente de Tempo</title>
+    <link rel="icon" href="../imagens/milasclock.png" type="image/png" sizes="any">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    <script>
+        // Previne o "flash" do tema incorreto (FOUC) ao carregar a página.
+        (function() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div id="dashboard-content" class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="landing.html" class="sidebar-header">
+                <img src="../imagens/millasfull.png" alt="Milla's Free Logo" class="sidebar-logo block dark:hidden">
+                <img src="../imagens/millas_escuro.png" alt="Milla's Free Logo" class="sidebar-logo-dark hidden dark:block">
+            </a>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="index.html" class="active"><i class="fas fa-tachometer-alt"></i> <span>Painel</span></a></li>
+                    <li><a href="company-dashboard.html" id="nav-members"><i class="fas fa-users"></i> <span>Membros</span></a></li>
+                    <li><a href="reports.html" id="nav-reports"><i class="fas fa-chart-pie"></i> <span>Relatórios</span></a></li>
+                    <li><a href="settings.html" id="nav-settings"><i class="fas fa-cog"></i> <span>Configurações</span></a></li>
+                    <li><a href="freelancer.html" id="nav-settings"><i class="fas fa-cog"></i> <span>tela do freela</span></a></li>
+                    <li class="hidden"><a href="profile.html"><i class="fas fa-user-clock"></i> <span>Meu Painel</span></a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <div class="main-content">
+            <header class="main-header">
+                <div class="header-actions">
+                    <button id="theme-toggle" aria-label="Alternar tema" class="theme-toggle-btn">
+                        <i class="fas fa-sun"></i>
+                    </button>
+                    <div id="profile-toggle" class="relative">
+                        <button title="Configurações" class="profile-pic"></button>
+                    </div>
+                </div>
+            </header>
+
+            <main>
+                <h1 class="text-2xl font-bold mb-6">Painel de Controle</h1>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="card">
+                        <h3 class="text-sm font-medium text-secondary">Horas Totais (Mês)</h3>
+                        <p id="stat-total-hours" class="text-3xl font-bold mt-1">--</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="text-sm font-medium text-secondary">Projetos Ativos (Mês)</h3>
+                        <p id="stat-active-projects" class="text-3xl font-bold mt-1">--</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="text-sm font-medium text-secondary">Membros da Equipe</h3>
+                        <p id="stat-team-members" class="text-3xl font-bold mt-1">--</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="text-sm font-medium text-secondary">Apontamentos Pendentes</h3>
+                        <p id="stat-pending-entries" class="text-3xl font-bold mt-1">--</p>
+                    </div>
+                </div>
+
+                <!-- Time Tracking Section -->
+                <div class="card time-tracker-card mb-8">
+                    <div class="flex flex-col items-center gap-6">
+                        <div class="w-full max-w-xl text-center">
+                            <label for="project-input" class="text-sm font-semibold mb-2 block opacity-80">O QUE VOCÊ ESTÁ FAZENDO?</label>
+                            <input id="project-input" type="text" list="tasks-datalist" placeholder="Ex: Desenvolver a tela de login" class="w-full text-center text-xl p-3" autocomplete="off">
+                            <datalist id="tasks-datalist"></datalist>
+                        </div>
+                        <div class="flex items-center gap-8">
+                            <div id="timer-display" class="text-5xl font-mono">00:00:00</div>
+                            <div class="flex space-x-2">
+                                <button id="start-button" class="btn btn-success w-32 justify-center"><i class="fas fa-play mr-2"></i> Iniciar</button>
+                                <button id="stop-button" class="btn btn-danger w-32 justify-center" disabled><i class="fas fa-stop mr-2"></i> Parar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Entries List -->
+                <div class="card">
+                    <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
+                        <h2 class="text-xl font-semibold">Entradas de Tempo</h2>
+                        <div class="flex items-center gap-4">
+                            <select id="status-filter" class="p-2 text-sm">
+                                <option value="all">Todos os Status</option>
+                                <option value="pending">Pendente</option>
+                                <option value="approved">Aprovado</option>
+                                <option value="rejected">Rejeitado</option>
+                            </select>
+                            <select id="member-filter" class="p-2 text-sm">
+                                <!-- Options will be populated by JS -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Projeto</th>
+                                    <th>Membro</th>
+                                    <th>Data</th>
+                                    <th>Duração</th>
+                                    <th>Status</th>
+                                    <th class="text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="time-entries-tbody">
+                                <!-- Rows will be injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="pagination-controls" class="flex justify-center items-center space-x-4 mt-6 hidden">
+                        <button id="prev-page-button" class="btn btn-secondary">Anterior</button>
+                        <button id="next-page-button" class="btn btn-primary">Próxima</button>
+                    </div>
+                </div>
+
+                <!-- Chart Section -->
+                <div class="card mt-8 text-center">
+                    <h2 class="text-xl font-semibold mb-2">Análise Detalhada</h2>
+                    <p class="text-secondary mb-4">Explore gráficos interativos e detalhados na nossa página de relatórios.</p>
+                    <a href="reports.html" class="btn btn-primary">Ver Relatórios Completos</a>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Container para outros modais da aplicação -->
+    <div id="modals-container">
+        <!-- Overlay da Página (usado com modais) -->
+        <div id="page-overlay" class="fixed inset-0 bg-black bg-opacity-20 hidden z-30"></div>
+
+        <!-- Modal de Perfil (Reutilizável) -->
+        <div id="profile-modal" class="dropdown-menu hidden z-40 !right-8 !top-[70px]">
+            <div class="card p-4 w-full max-w-xs">
+                <div id="user-view" class="space-y-3">
+                    <div class="text-sm">
+                        <p class="font-semibold" id="user-email-display">carregando...</p>
+                        <div id="verification-status" class="text-xs mt-1"></div>
+                    </div>
+                    <hr class="border-border-color">
+                    <a href="settings.html" class="block text-sm hover:text-primary"><i class="fas fa-cog w-6"></i> Configurações</a>
+                    <a href="#" id="logout-button" class="block text-sm hover:text-primary"><i class="fas fa-sign-out-alt w-6"></i> Sair</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Esqueci a Senha -->
+        <div id="forgot-password-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50">
+            <div class="card p-6 w-full max-w-sm">
+                <h3 class="text-xl font-bold mb-4">Redefinir Senha</h3>
+                <p class="text-sm mb-4 text-secondary">Digite seu e-mail e enviaremos um link para você redefinir sua senha.</p>
+                <form id="forgot-password-form">
+                    <div class="mb-4">
+                        <label for="forgot-email" class="block text-sm font-medium mb-1">Email</label>
+                        <input id="forgot-email" type="email" required class="w-full p-2">
+                    </div>
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" id="cancel-forgot-button" class="btn btn-secondary">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Enviar Link</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal de Compartilhamento -->
+        <div id="share-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50">
+            <div class="card p-6 w-full max-w-md">
+                <h3 class="text-xl font-bold mb-4">Compartilhe este aplicativo</h3>
+                <p class="mb-4 text-secondary">Use o ID abaixo para compartilhar o app com outras pessoas.</p>
+                <div class="flex items-center bg-main p-2 rounded-lg">
+                    <span id="app-id-display" class="font-mono text-secondary break-all flex-grow mr-2"></span>
+                    <button id="copy-app-id" class="btn btn-primary btn-sm">Copiar</button>
+                </div>
+                <div class="flex justify-end mt-4">
+                    <button id="close-share-modal" class="btn btn-secondary">Fechar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Edição -->
+        <div id="edit-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50">
+            <div class="card p-6 w-full max-w-md">
+                <h3 class="text-xl font-bold mb-4">Editar Entrada de Tempo</h3>
+                <input type="hidden" id="edit-entry-id">
+                <div class="mb-4">
+                    <label for="edit-project-input" class="block text-sm font-medium mb-1">Projeto</label>
+                    <input id="edit-project-input" type="text" class="w-full p-2">
+                </div>
+                <div class="mb-4">
+                    <label for="edit-date-input" class="block text-sm font-medium mb-1">Data</label>
+                    <input id="edit-date-input" type="date" class="w-full p-2">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-1">Duração (HH:MM:SS)</label>
+                    <div class="flex space-x-2">
+                        <input id="edit-hours" type="number" min="0" placeholder="HH" class="w-1/3 p-2 text-center">
+                        <input id="edit-minutes" type="number" min="0" max="59" placeholder="MM" class="w-1/3 p-2 text-center">
+                        <input id="edit-seconds" type="number" min="0" max="59" placeholder="SS" class="w-1/3 p-2 text-center">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button id="cancel-edit-button" class="btn btn-secondary">Cancelar</button>
+                    <button id="save-edit-button" class="btn btn-primary w-24 text-center">
+                        <span class="button-text">Salvar</span>
+                        <i class="fas fa-spinner fa-spin hidden button-spinner"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Mensagem (substitui alert/confirm) -->
+        <div id="message-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50 p-4">
+            <div class="card p-6 w-full max-w-sm text-center">
+                <p id="message-text" class="text-lg font-semibold mb-4"></p>
+                <div id="message-buttons" class="flex justify-center space-x-4">
+                    <button id="message-ok" class="btn btn-primary">OK</button>
+                    <button id="message-cancel" class="btn btn-secondary hidden">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/scripts.js"></script>
+</body>
+</html>
