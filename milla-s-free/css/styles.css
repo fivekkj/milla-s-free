@@ -45,6 +45,11 @@ html.dark {
     font-family: 'Poppins', sans-serif;
 }
 
+html, body {
+    height: 100%;
+    overflow: hidden; /* Impede o scroll do body, permitindo que apenas o main-content role */
+}
+
 body {
     background-color: var(--bg-main);
     color: var(--text-primary);
@@ -56,7 +61,7 @@ body {
 
 .dashboard-container {
     display: flex;
-    min-height: 100vh;
+    height: 100%; /* Garante que o container ocupe toda a altura disponível */
 }
 
 /* --- Layout Principal (Sidebar + Conteúdo) --- */
@@ -69,6 +74,7 @@ body {
     flex-shrink: 0; /* Impede que a sidebar encolha */
     transition: width 0.3s ease;
     border-right: 1px solid var(--border-color);
+    height: 100%; /* Garante que a sidebar ocupe toda a altura do dashboard-container */
 }
 
 .sidebar-logo {
@@ -87,6 +93,9 @@ body {
     width: 100%;
     object-fit: contain;
     object-position: left center;
+    margin-bottom: 0.5rem; /* Adicionado para alinhar com o logo do tema claro */
+    display: block; /* Adicionado para alinhar com o logo do tema claro */
+    opacity: 0.8; /* Adicionado para alinhar com o logo do tema claro */
 }
 
 .sidebar-header {
@@ -156,6 +165,7 @@ body {
     flex-grow: 1;
     padding: 2rem;
     overflow-y: auto;
+    height: 100%; /* Garante que o conteúdo principal ocupe toda a altura e role */
 }
 
 /* --- Cabeçalho --- */
