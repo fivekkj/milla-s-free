@@ -1,6 +1,7 @@
-import { auth } from './firebase-services.js';
+import { auth, functions } from './firebase-services.js';
 import { showMessageModal } from './ui-helpers.js';
-import { signInWithEmailAndPassword, setPersistence, browserSessionPersistence, browserLocalPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { signInWithEmailAndPassword, setPersistence, browserSessionPersistence, browserLocalPersistence, sendPasswordResetEmail, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 
 export function initLandingAuth() {
     const loginModal = document.getElementById('login-modal');
@@ -143,11 +144,30 @@ export function initLandingAuth() {
                 return;
             }
 
-            // Armazena o token para ser usado na próxima página
-            localStorage.setItem('memberLoginToken', token);
+            // Adiciona um token de teste para bypassar a autenticação real
+            if (token === 'dev-a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d') {
+                console.log("Token de teste detectado. Redirecionando para o perfil de teste.");
+                localStorage.setItem('memberLoginToken', token);
+                window.location.href = 'profile.html';
+                return;
+            }
 
-            // Redireciona para a página de perfil, que cuidará da autenticação com o token
-            window.location.href = 'profile.html';
+            try {
+                // Chama a Cloud Function para obter um token de autenticação customizado
+                const getMemberAuthToken = httpsCallable(functions, 'getMemberAuthToken');
+                const result = await getMemberAuthToken({ memberId: token });
+                const customAuthToken = result.data.token;
+
+                // Faz login com o token customizado
+                await signInWithCustomToken(auth, customAuthToken);
+
+                // Redireciona para a página de perfil, agora com o colaborador autenticado
+                window.location.href = 'profile.html';
+
+            } catch (error) {
+                console.error("Erro na autenticação do colaborador:", error);
+                showMessageModal("Token de acesso inválido ou expirado. Por favor, solicite um novo ao seu gestor.");
+            }
         });
     }
 }

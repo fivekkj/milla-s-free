@@ -1,7 +1,8 @@
 import { initializeApp } from './app.js';
-import { db, auth } from './firebase-services.js';
+import { db, auth, functions } from './firebase-services.js';
 import { showMessageModal, toggleButtonLoading } from './ui-helpers.js';
 import { collection, query, where, onSnapshot, doc, deleteDoc, setLogLevel, updateDoc, orderBy, addDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+import { httpsCallable } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js';
 
 setLogLevel('warn');
 
@@ -271,22 +272,21 @@ function initCompanyDashboardPage(user) {
             const memberEmail = createMemberForm['member-email'].value;
 
             try {
-                // Lógica movida da Cloud Function para o cliente.
-                // Adiciona o novo membro diretamente ao Firestore.
-                await addDoc(collection(db, "members"), {
-                    name: memberName,
-                    email: memberEmail,
-                    companyId: userId, // O ID do gestor logado
-                    createdAt: new Date(),
-                });
+                // Chama a Cloud Function para criar o membro de forma segura.
+                // NOTA: Para isso funcionar com as regras atuais, o admin precisa do claim 'role: admin'.
+                // Como o login padrão não adiciona isso, a regra no Firestore precisa ser ajustada.
+                // A chamada à função em si é a prática correta.
+                const createMember = httpsCallable(functions, 'createMember');
+                await createMember({ name: memberName, email: memberEmail });
 
                 createMemberModal.classList.add('hidden');
                 createMemberForm.reset();
                 // A lista será atualizada automaticamente pelo onSnapshot.
-                showMessageModal(`Colaborador "${memberName}" adicionado! Ele(a) pode agora acessar o painel de colaborador usando este e-mail e definindo uma senha.`);
+                showMessageModal(`Colaborador "${memberName}" adicionado com sucesso!`);
             } catch (error) {
                 console.error("Erro ao adicionar colaborador:", error);
-                const errorMessage = "Erro ao adicionar colaborador. Verifique os dados e tente novamente.";
+                // Mensagem de erro mais específica baseada na resposta da Cloud Function
+                const errorMessage = error.message.includes("permission-denied") ? "Você não tem permissão para adicionar colaboradores." : "Erro ao adicionar colaborador. Verifique os dados e tente novamente.";
                 showMessageModal(errorMessage);
             } finally {
                 toggleButtonLoading(submitButton, false);
