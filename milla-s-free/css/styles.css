@@ -51,7 +51,7 @@ html.dark {
 
 html, body {
     height: 100%;
-    overflow: hidden; /* Impede o scroll do body, permitindo que apenas o main-content role */
+    overflow: auto; /* Impede o scroll do body, permitindo que apenas o main-content role */
 }
 
 body {
