@@ -4,10 +4,16 @@ import { signInWithEmailAndPassword, setPersistence, browserSessionPersistence, 
 
 export function initLandingAuth() {
     const loginModal = document.getElementById('login-modal');
+    const memberLoginModal = document.getElementById('member-login-modal');
     const openLoginModalBtn = document.getElementById('open-login-modal-btn');
+    const openMemberLoginLink = document.getElementById('open-member-login-modal-link');
+    const footerOpenMemberLoginLink = document.getElementById('footer-open-member-login-modal');
+    const backToAdminLink = document.getElementById('back-to-admin-login-link');
     const loginForm = document.getElementById('login-form');
     const loginErrorEl = document.getElementById('login-error-message');
     const allOpenTriggers = document.querySelectorAll('.open-login-modal-trigger');
+    // O formulário de login do membro agora está na landing page
+    const memberLoginForm = document.getElementById('member-login-form');
 
     if (!loginModal || !openLoginModalBtn || !loginForm || !loginErrorEl) {
         console.error("Elementos do modal de login não encontrados.");
@@ -15,11 +21,13 @@ export function initLandingAuth() {
     }
 
     const toggleModal = () => loginModal.classList.toggle('hidden');
+    const openModal = () => loginModal.classList.remove('hidden');
 
     openLoginModalBtn.addEventListener('click', (e) => {
         e.preventDefault();
         toggleModal();
     });
+
 
     allOpenTriggers.forEach(trigger => {
         trigger.addEventListener('click', (e) => {
@@ -31,10 +39,38 @@ export function initLandingAuth() {
     // Fecha o dropdown se clicar em qualquer lugar fora dele
     document.addEventListener('click', (e) => {
         // Verifica se o modal está visível e se o clique foi fora do modal e fora do botão que o abre
-        if (!loginModal.classList.contains('hidden') && !loginModal.contains(e.target) && !openLoginModalBtn.contains(e.target)) {
+        const isClickInsideLogin = loginModal.contains(e.target) || openLoginModalBtn.contains(e.target) || Array.from(allOpenTriggers).some(t => t.contains(e.target));
+        const isClickInsideMemberLogin = memberLoginModal.contains(e.target) || openMemberLoginLink.contains(e.target) || footerOpenMemberLoginLink.contains(e.target);
+
+        if (!loginModal.classList.contains('hidden') && !isClickInsideLogin && !isClickInsideMemberLogin) {
             loginModal.classList.add('hidden');
         }
+        if (!memberLoginModal.classList.contains('hidden') && !isClickInsideMemberLogin && !isClickInsideLogin) {
+            memberLoginModal.classList.add('hidden');
+        }
     });
+
+    // Alterna para o modal de login de membro
+    [openMemberLoginLink, footerOpenMemberLoginLink].forEach(link => {
+        if (link) {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation(); // Impede que o evento de clique feche o modal imediatamente
+                loginModal.classList.add('hidden');
+                memberLoginModal.classList.remove('hidden');
+            });
+        }
+    });
+
+    // Volta para o modal de login de admin
+    if (backToAdminLink) {
+        backToAdminLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            memberLoginModal.classList.add('hidden');
+            loginModal.classList.remove('hidden');
+        });
+    }
 
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -93,6 +129,25 @@ export function initLandingAuth() {
                 console.error("Erro ao enviar e-mail de redefinição:", error);
                 showMessageModal("Ocorreu um erro. Verifique o e-mail digitado e tente novamente.");
             }
+        });
+    }
+
+    // Lógica para o formulário de login do membro (com token)
+    if (memberLoginForm) {
+        memberLoginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = memberLoginForm['login-token'].value.trim();
+
+            if (!token) {
+                showMessageModal("Por favor, insira seu token de acesso.");
+                return;
+            }
+
+            // Armazena o token para ser usado na próxima página
+            localStorage.setItem('memberLoginToken', token);
+
+            // Redireciona para a página de perfil, que cuidará da autenticação com o token
+            window.location.href = 'profile.html';
         });
     }
 }

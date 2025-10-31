@@ -82,6 +82,28 @@
                         <div class="text-center mt-3">
                             <p class="text-xs text-secondary">Não tem uma conta? <a href="register.html" class="font-semibold text-primary hover:underline">Cadastre-se</a></p>
                         </div>
+                        <div class="text-center mt-2">
+                            <a href="#" id="open-member-login-modal-link" class="text-xs text-secondary hover:text-primary underline">Acessar como Colaborador</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal de Login do Colaborador -->
+            <div id="member-login-modal" class="dropdown-menu hidden">
+                <div class="card p-6 w-full max-w-xs relative">
+                    <div class="text-center mb-4">
+                        <h3 class="text-xl font-bold">Acessar como Colaborador</h3>
+                    </div>
+                    <form id="member-login-form">
+                        <div class="mb-4">
+                            <label for="login-token" class="block text-sm font-medium mb-1">Token de Acesso</label>
+                            <input id="login-token" type="text" placeholder="Cole seu token aqui" required class="w-full p-2 text-center">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-full mt-2">Entrar</button>
+                        <div class="text-center mt-3">
+                            <a href="#" id="back-to-admin-login-link" class="text-xs text-secondary hover:text-primary underline">Acessar como Gestor</a>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -441,7 +463,7 @@
     <footer class="section-bg py-8 px-6">
         <div class="container mx-auto text-center">
             <p>&copy; 2025 Milla's Free. Todos os direitos reservados.</p>
-            <a href="member-login.html" class="text-sm text-secondary hover:text-primary underline mt-2 inline-block">Acessar como Colaborador</a>
+            <a href="#" id="footer-open-member-login-modal" class="text-sm text-secondary hover:text-primary underline mt-2 inline-block">Acessar como Colaborador</a>
             <p class="text-sm mt-2">Desenvolvido como projeto de TCC no SENAI-CTTI em parceria com 3AQ Tecnologia.</p>
         </div>
     </footer>
