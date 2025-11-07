@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizar Pagamento - Milla's Free</title>
+    <link rel="icon" href="../imagens/milasclock.png" type="image/png" sizes="any">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    <script>
+        // Aplica o tema (claro/escuro) para evitar FOUC (Flash of Unstyled Content)
+        (function() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="section-bg">
+
+    <!-- Header Simplificado -->
+    <header class="landing-header sticky top-0 z-50 text-primary">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="landing.html" class="h-12 w-48">
+                <img src="../imagens/millasfull.png" alt="Milla's Free Logo" class="sidebar-logo block dark:hidden">
+                <img src="../imagens/millas_escuro.png" alt="Milla's Free Logo" class="sidebar-logo-dark hidden dark:block">
+            </a>
+            <div class="flex items-center space-x-4">
+                <a href="landing.html#pricing" class="font-semibold hover:text-white">
+                    <i class="fas fa-arrow-left mr-2"></i>Voltar aos Planos
+                </a>
+                <button id="theme-toggle" aria-label="Alternar tema claro/escuro" class="text-xl p-2 rounded-full transition-colors">
+                    <i class="fas fa-sun"></i>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="py-16 px-6">
+        <div class="container mx-auto max-w-4xl">
+            <div class="text-center mb-10">
+                <i class="fas fa-credit-card text-4xl text-primary mb-3"></i>
+                <h2 class="text-3xl md:text-4xl font-extrabold mb-2">Finalize o Pagamento</h2>
+                <p class="text-lg text-secondary">Você está a um passo de otimizar a gestão da sua equipe.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+
+                <!-- Coluna de Resumo do Plano -->
+                <div class="card p-8 order-2 lg:order-1">
+                    <h3 class="text-2xl font-bold mb-6 border-b border-border-color pb-4">Resumo do Pedido</h3>
+
+                    <div class="space-y-5">
+                        <div class="flex justify-between items-center">
+                            <span class="text-secondary font-medium">Plano</span>
+                            <span id="selected-plan-name" class="font-bold text-lg">Essencial</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-secondary font-medium">Cobrança</span>
+                            <span class="font-bold">Mensal</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t-2 border-dashed border-border-color">
+                        <div class="flex justify-between items-baseline">
+                            <span class="font-semibold text-xl">Total</span>
+                            <span id="plan-price" class="text-3xl font-extrabold text-primary">R$ 49,90</span>
+                        </div>
+                    </div>
+
+                    <h4 class="text-lg font-semibold mt-8 mb-3">Alterar Plano</h4>
+                    <div id="plan-selector-container" class="segmented-control flex flex-wrap gap-2"></div>
+
+                    <div class="mt-8 text-xs text-secondary bg-base-100 p-3 rounded-md">
+                        <p><i class="fas fa-info-circle mr-2"></i>Sua assinatura será renovada automaticamente. Você pode cancelar a qualquer momento no painel de configurações.</p>
+                    </div>
+                </div>
+
+                <!-- Coluna de Pagamento -->
+                <div class="card p-8 order-1 lg:order-2">
+                    <h3 class="text-2xl font-bold mb-6">Informações de Pagamento</h3>
+                    <form id="payment-form">
+                        <div class="space-y-5">
+                            <div>
+                                <label for="card-name" class="block text-sm font-medium mb-1">Nome no Cartão</label>
+                                <input id="card-name" type="text" required class="w-full p-3" placeholder="Nome completo como no cartão">
+                            </div>
+                            <div>
+                                <label for="card-number" class="block text-sm font-medium mb-1">Número do Cartão</label>
+                                <input id="card-number" type="text" required class="w-full p-3" placeholder="0000 0000 0000 0000">
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="flex-1">
+                                    <label for="card-expiry" class="block text-sm font-medium mb-1">Validade</label>
+                                    <input id="card-expiry" type="text" required class="w-full p-3" placeholder="MM/AA">
+                                </div>
+                                <div class="flex-1">
+                                    <label for="card-cvc" class="block text-sm font-medium mb-1">CVC</label>
+                                    <input id="card-cvc" type="text" required class="w-full p-3" placeholder="123">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-8">
+                            <button type="submit" class="btn btn-primary w-full text-lg py-3">
+                                <span class="button-text"><i class="fas fa-lock mr-2"></i>Confirmar Pagamento</span>
+                                <span class="button-spinner hidden">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </span>
+                            </button>
+                        </div>
+                        <div class="text-center mt-4 text-xs text-secondary">
+                            <p><i class="fas fa-lock"></i> Transação segura e criptografada.</p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="section-bg py-8 px-6 mt-16">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2025 Milla's Free. Todos os direitos reservados.</p>
+            <a href="member-login.html" class="text-sm text-secondary hover:text-primary underline mt-2 inline-block">Acessar como Colaborador</a>
+            <p class="text-sm mt-2">Desenvolvido como projeto de TCC no SENAI-CTTI em parceria com 3AQ Tecnologia.</p>
+        </div>
+    </footer>
+
+    <script type="module" src="../js/theme-manager.js"></script>
+    <script type="module" src="../js/payment.js"></script>
+
+</body>
+
+</html>
