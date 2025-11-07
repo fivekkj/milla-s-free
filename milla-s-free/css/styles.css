@@ -595,3 +595,8 @@ html:not(.dark) .section-bg {
 .search-input, input[type="search"].search-input {
     padding-left: 2.5rem !important; /* 40px - Garante espaço para o ícone da lupa */
 }
+.segmented-control .active {
+    background-color: var(--accent-purple);
+    color: #ffffff;
+    border-color: var(--accent-purple);
+}
