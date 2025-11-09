@@ -35,39 +35,63 @@ function initUIElements() {
     }
 }
 
+async function initProfilePage() {
+    initUIElements();
+    initThemeManager('theme-toggle');
+
+    const testToken = localStorage.getItem('memberLoginToken');
+    const isTestMode = testToken === 'dev-a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d';
+
+    if (isTestMode) {
+        // Modo de teste ativado
+        console.log("Modo de teste ativado. Carregando dados de exemplo.");
+        localStorage.removeItem('memberLoginToken'); // Limpa o token de teste
+        memberId = 'dev-a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d'; // ID do documento do membro de teste
+        companyId = 'test-company-id'; // ID da empresa de teste
+        
+        const memberNameDisplay = document.getElementById('member-name-display');
+        if (memberNameDisplay) {
+            memberNameDisplay.textContent = "Colaborador de Teste";
+        }
+        // No modo de teste, buscamos os dados diretamente, sem depender de autenticação.
+        setupTimeEntriesListener();
+        setupTasksListener();
+        setupTimerControls();
+    } else {
+        // Lógica de autenticação normal
+        initializeFirebase();
+    }
+}
+
 async function initializeFirebase() {
     try {
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // O UID do usuário logado com custom token é o ID do membro no Firestore
                 memberId = user.uid;
                 console.log("Colaborador autenticado:", memberId);
 
-                // Buscar dados do membro para obter o companyId e o nome
                 const memberDocRef = doc(db, "members", memberId);
                 const memberDocSnap = await getDoc(memberDocRef);
 
                 if (memberDocSnap.exists()) {
                     const memberData = memberDocSnap.data();
                     companyId = memberData.companyId;
+
                     const memberNameDisplay = document.getElementById('member-name-display');
                     if (memberNameDisplay) {
                         memberNameDisplay.textContent = memberData.name;
                     }
 
-                    // Inicializar funcionalidades da página
                     setupTimeEntriesListener();
                     setupTasksListener();
                     setupTimerControls();
                 } else {
                     console.error("Documento do membro não encontrado!");
                     await signOut(auth).catch(err => console.error("Sign out failed", err));
-                    // O onAuthStateChanged vai pegar o logout e redirecionar
                 }
             } else {
-                // Se não houver usuário, redireciona para a página de login do membro
                 console.log("Nenhum colaborador logado. Redirecionando...");
-                window.location.href = 'member-login.html';
+                window.location.href = 'landing.html';
             }
         });
     } catch (error) {
@@ -202,4 +226,4 @@ function setupTasksListener() {
     });
 }
 
-initializeApp(initProfilePage, db);
+document.addEventListener('DOMContentLoaded', initProfilePage);
