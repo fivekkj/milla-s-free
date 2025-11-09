@@ -38,6 +38,7 @@
                 <ul>
                     <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> <span>Painel</span></a></li>
                     <li><a href="company-dashboard.html" class="active"><i class="fas fa-users"></i> <span>Membros</span></a></li>
+                    <li><a href="demands.html"><i class="fas fa-tasks"></i> <span>Demandas</span></a></li>
                     <li><a href="reports.html"><i class="fas fa-chart-pie"></i> <span>Relatórios</span></a></li>
                     <li><a href="settings.html"><i class="fas fa-cog"></i> <span>Configurações</span></a></li>
                     <li class="hidden"><a href="profile.html"><i class="fas fa-user-clock"></i> <span>Meu Painel</span></a></li>
@@ -113,23 +114,6 @@
                     </div>
                 </div>
 
-                <div class="card mb-10">
-                    <!-- Task Management Section -->
-                    <h2 class="text-xl font-semibold">Tarefas Pré-definidas</h2>
-                    <p class="text-sm text-secondary mb-6">Crie tarefas para agilizar o apontamento da equipe.</p>
-
-                    <form id="add-task-form" class="flex items-center gap-2 mb-4" autocomplete="off">
-                        <input type="text" id="new-task-name" name="dashboard_task_name" placeholder="Nome da nova tarefa" required autocomplete="off" class="flex-grow p-2.5">
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-plus"></i> Adicionar
-                        </button>
-                    </form>
-
-                    <!-- Tasks List -->
-                    <div id="tasks-list" class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <!-- Task items will be injected here by JS -->
-                    </div>
-                </div>
             </main>
         </div>
     </div>
@@ -180,27 +164,6 @@
                     <div class="flex justify-end space-x-4">
                         <button type="button" id="cancel-edit-member-button" class="btn btn-secondary">Cancelar</button>
                         <button type="submit" id="save-edit-member-button" class="btn btn-primary w-24 text-center">
-                            <span class="button-text">Salvar</span>
-                            <i class="fas fa-spinner fa-spin hidden button-spinner"></i>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Modal de Editar Tarefa -->
-        <div id="edit-task-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50">
-            <div class="card p-6 rounded-xl shadow-xl w-full max-w-sm">
-                <h3 class="text-xl font-bold mb-4">Editar Tarefa</h3>
-                <form id="edit-task-form">
-                    <input type="hidden" id="edit-task-id">
-                    <div class="mb-6">
-                        <label for="edit-task-name" class="block text-sm font-medium mb-1">Nome da Tarefa</label>
-                        <input id="edit-task-name" type="text" required class="w-full p-2">
-                    </div>
-                    <div class="flex justify-end space-x-4">
-                        <button type="button" id="cancel-edit-task-button" class="btn btn-secondary">Cancelar</button>
-                        <button type="submit" id="save-edit-task-button" class="btn btn-primary w-24 text-center">
                             <span class="button-text">Salvar</span>
                             <i class="fas fa-spinner fa-spin hidden button-spinner"></i>
                         </button>

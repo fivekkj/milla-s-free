@@ -297,22 +297,24 @@ input[type="password"],
 input[type="number"],
 input[type="date"],
 input[type="search"],
-select {
+select,
+textarea {
     background-color: var(--bg-main);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 0.7rem 1rem;
     color: var(--text-primary);
     transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%; /* Garante que o textarea também ocupe 100% por padrão */
 }
 
-input:focus, select:focus {
+input:focus, select:focus, textarea:focus {
     outline: none;
     border-color: var(--accent-purple);
     box-shadow: 0 0 0 3px rgba(138, 92, 246, 0.2);
 }
 
-html.dark input, html.dark select {
+html.dark input, html.dark select, html.dark textarea {
     background-color: var(--bg-card);
 }
 

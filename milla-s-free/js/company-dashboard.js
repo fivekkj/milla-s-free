@@ -7,16 +7,13 @@ import { httpsCallable } from 'https://www.gstatic.com/firebasejs/11.6.1/firebas
 setLogLevel('warn');
 
 let userId;
-let allMembers = [];
-let allTasks = [];
+let allMembers = []; 
 let membersCurrentPage = 1;
 const membersPageSize = 5;
  
 let companyEmailDisplay, addMemberButton, membersList, createMemberModal, createMemberForm, cancelCreateMemberButton,
     editMemberModal, editMemberForm, cancelEditMemberButton, saveEditMemberButton, editMemberIdInput, editMemberNameInput,
-    editMemberEmailInput, searchMemberInput, membersPaginationControls, prevMembersPageButton, nextMembersPageButton,
-    addTaskForm, newTaskNameInput, tasksList, editTaskModal, editTaskForm, cancelEditTaskButton, saveEditTaskButton,
-    editTaskIdInput, editTaskNameInput;
+    editMemberEmailInput, searchMemberInput, membersPaginationControls, prevMembersPageButton, nextMembersPageButton;
  
 function initUIElements() {
     companyEmailDisplay = document.getElementById('company-email-display');
@@ -36,38 +33,6 @@ function initUIElements() {
     membersPaginationControls = document.getElementById('members-pagination-controls');
     prevMembersPageButton = document.getElementById('prev-members-page-button');
     nextMembersPageButton = document.getElementById('next-members-page-button');
-    addTaskForm = document.getElementById('add-task-form');
-    newTaskNameInput = document.getElementById('new-task-name');
-    tasksList = document.getElementById('tasks-list');
-    editTaskModal = document.getElementById('edit-task-modal');
-    editTaskForm = document.getElementById('edit-task-form');
-    cancelEditTaskButton = document.getElementById('cancel-edit-task-button');
-    saveEditTaskButton = document.getElementById('save-edit-task-button');
-    editTaskIdInput = document.getElementById('edit-task-id');
-    editTaskNameInput = document.getElementById('edit-task-name');
-}
-
-function createTaskHTML(task) {
-    // Função auxiliar para escapar HTML e prevenir XSS.
-    const sanitize = (str) => {
-        const temp = document.createElement('div');
-        temp.textContent = str;
-        return temp.innerHTML;
-    };
-
-    return `
-        <div class="task-item">
-            <span class="font-semibold">${sanitize(task.name)}</span>
-            <div class="flex items-center gap-2">
-                <button title="Editar Tarefa" class="edit-task-button btn-icon" data-id="${task.id}" data-name="${sanitize(task.name)}">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button title="Excluir Tarefa" class="delete-task-button btn-icon" data-id="${task.id}" data-name="${sanitize(task.name)}">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </div>
-    `;
 }
 
 function createMemberHTML(member) {
@@ -169,42 +134,12 @@ function setupMembersListener() {
     });
 }
 
-function setupTasksListener() {
-    if (!db || !userId) return;
-
-    const q = query(collection(db, "tasks"), where("companyId", "==", userId), orderBy("name"));
-
-    onSnapshot(q, (snapshot) => {
-        console.log(`[setupTasksListener] Snapshot recebido para tarefas. Total: ${snapshot.size} tarefas.`);
-        allTasks = []; // Clear the array before repopulating
-        snapshot.forEach(doc => {
-            allTasks.push({ id: doc.id, ...doc.data() });
-        });
-
-        if (snapshot.empty) {
-            const p = document.createElement('p');
-            p.className = 'text-center text-secondary text-sm col-span-full';
-            p.textContent = 'Nenhuma tarefa pré-definida.';
-            tasksList.innerHTML = '';
-            tasksList.appendChild(p);
-            return;
-        }
-
-        tasksList.innerHTML = allTasks.map(createTaskHTML).join('');
-
-    }, (error) => {
-        console.error("Erro ao buscar tarefas:", error);
-        tasksList.innerHTML = '<p class="text-center text-red-500 text-sm col-span-full">Erro ao carregar tarefas.</p>';
-    });
-}
-
 function initCompanyDashboardPage(user) {
     userId = user.uid;
     console.log("Dashboard da Empresa inicializado para:", userId);
 
     initUIElements();
     setupMembersListener();
-    setupTasksListener();
 
     if (addMemberButton) addMemberButton.addEventListener('click', () => createMemberModal.classList.remove('hidden'));
     if (cancelCreateMemberButton) cancelCreateMemberButton.addEventListener('click', () => createMemberModal.classList.add('hidden'));
@@ -214,45 +149,6 @@ function initCompanyDashboardPage(user) {
         createMemberModal.addEventListener('click', (e) => {
             if (e.target.id === 'create-member-modal') {
                 createMemberModal.classList.add('hidden');
-            }
-        });
-    }
-
-    if (addTaskForm) {
-        addTaskForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const taskName = newTaskNameInput.value.trim();
-            if (taskName && userId) {                
-                const isDuplicate = allTasks.some(task => task.name.toLowerCase() === taskName.toLowerCase());
-                if (isDuplicate) {
-                    showMessageModal(`A tarefa "${taskName}" já existe.`);
-                    return;
-                }
-                
-                console.log("Tentando adicionar tarefa com companyId:", userId);
-                console.log("Usuário autenticado (auth.currentUser.uid):", auth.currentUser ? auth.currentUser.uid : "Nenhum usuário logado");
-                try {
-                    await addDoc(collection(db, 'tasks'), {
-                        name: taskName,
-                        companyId: userId,
-                        createdAt: new Date()
-                    });
-                } catch (error) {
-                    console.error("Erro ao adicionar tarefa:", error);
-                    showMessageModal("Não foi possível adicionar a tarefa. Tente novamente.");
-                } finally {
-                    newTaskNameInput.value = '';
-                }
-            }
-        });
-    }
-    
-    // Adiciona funcionalidade de Enter para adicionar tarefa
-    if (newTaskNameInput) {
-        newTaskNameInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault(); // Evita quebra de linha ou outro comportamento padrão
-                addTaskForm.dispatchEvent(new Event('submit')); // Dispara o evento de submit do formulário
             }
         });
     }
@@ -354,76 +250,6 @@ function initCompanyDashboardPage(user) {
         editMemberModal.addEventListener('click', (e) => {
             if (e.target.id === 'edit-member-modal') {
                 editMemberModal.classList.add('hidden');
-            }
-        });
-    }
-
-    if (tasksList) {
-        tasksList.addEventListener('click', async (e) => {
-            const button = e.target.closest('button');
-            if (!button) return;
-
-            if (button.classList.contains('edit-task-button')) {
-                editTaskIdInput.value = button.dataset.id;
-                editTaskNameInput.value = button.dataset.name;
-                editTaskModal.classList.remove('hidden');
-            }
-
-            if (button.classList.contains('delete-task-button')) {
-                const taskId = button.dataset.id;
-                const taskName = button.dataset.name;
-                const confirmed = await showMessageModal(`Tem certeza que deseja excluir a tarefa "${taskName}"?`, 'confirm');
-                if (confirmed) {
-                    await deleteDoc(doc(db, "tasks", taskId));
-                    showMessageModal("Tarefa excluída com sucesso.");
-                }
-            }
-        });
-    }
-
-    if (cancelEditTaskButton) cancelEditTaskButton.addEventListener('click', () => editTaskModal.classList.add('hidden'));
-
-    // Fecha o modal de edição de tarefa ao clicar no backdrop
-    if (editTaskModal) {
-        editTaskModal.addEventListener('click', (e) => {
-            if (e.target.id === 'edit-task-modal') {
-                editTaskModal.classList.add('hidden');
-            }
-        });
-    }
-
-    if (editTaskForm) {
-        editTaskForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const taskId = editTaskIdInput.value;
-            const newName = editTaskNameInput.value.trim();
-
-            if (!newName) {
-                showMessageModal("O nome da tarefa não pode ser vazio.");
-                return;
-            }
-
-            const isDuplicate = allTasks.some(task =>
-                task.name.toLowerCase() === newName.toLowerCase() && task.id !== taskId
-            );
-
-            if (isDuplicate) {
-                showMessageModal(`A tarefa "${newName}" já existe.`);
-                return;
-            }
-
-            toggleButtonLoading(saveEditTaskButton, true);
-            const taskDocRef = doc(db, "tasks", taskId);
-
-            try {
-                await updateDoc(taskDocRef, { name: newName });
-                editTaskModal.classList.add('hidden');
-                showMessageModal("Tarefa atualizada com sucesso.");
-            } catch (error) {
-                console.error("Erro ao atualizar tarefa:", error);
-                showMessageModal("Erro ao atualizar a tarefa. Tente novamente.");
-            } finally {
-                toggleButtonLoading(saveEditTaskButton, false);
             }
         });
     }
