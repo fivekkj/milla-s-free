@@ -1,70 +1,66 @@
-import { auth } from './firebase-services.js';
+import { auth, functions } from './firebase-services.js';
 import { applyInitialTheme } from './theme-manager.js';
 import { showMessageModal } from './ui-helpers.js';
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { signInWithCustomToken, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 
 applyInitialTheme();
 
 document.addEventListener('DOMContentLoaded', () => {
     const memberLoginForm = document.getElementById('member-login-form');
-    const emailInput = document.getElementById('member-email');
-    const passwordInput = document.getElementById('member-password');
+    const tokenInput = document.getElementById('login-token');
     const forgotPasswordLink = document.getElementById('member-forgot-password');
 
-    if (!memberLoginForm || !emailInput || !passwordInput || !forgotPasswordLink) {
+    if (!memberLoginForm || !tokenInput || !forgotPasswordLink) {
         console.error("Elementos do formulário de login de membro não encontrados.");
         return;
     }
     
     memberLoginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = emailInput.value.trim();
-        const password = passwordInput.value.trim();
+        const token = tokenInput.value.trim();
 
-        if (!email || !password) {
-            showMessageModal("Por favor, preencha e-mail e senha.");
+        if (!token) {
+            showMessageModal("Por favor, insira seu token de acesso.");
             return;
         }
 
         const submitButton = memberLoginForm.querySelector('button[type="submit"]');
         submitButton.disabled = true;
 
+        // Adiciona um token de teste para bypassar a autenticação real
+        if (token === 'dev-a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d') {
+            console.log("Token de teste detectado. Redirecionando para o perfil de teste.");
+            localStorage.setItem('memberLoginToken', token);
+            window.location.href = 'profile.html';
+            return;
+        }
+
         try {
-            // Tenta fazer login com e-mail e senha.
-            // O Firebase Auth não distingue entre "usuário não encontrado" e "senha errada" por segurança.
-            // No entanto, o login de colaborador é um caso especial.
-            // A segurança aqui é garantida pelas regras do Firestore na página de perfil,
-            // que verificarão se o UID do usuário logado corresponde a um documento na coleção 'members'.
-            await signInWithEmailAndPassword(auth, email, password);
+            // Chama a Cloud Function para obter um token de autenticação customizado
+            const getMemberAuthToken = httpsCallable(functions, 'getMemberAuthToken');
+            const result = await getMemberAuthToken({ memberId: token });
+            const customAuthToken = result.data.token;
+
+            // Faz login com o token customizado
+            await signInWithCustomToken(auth, customAuthToken);
             
-            // Se o login for bem-sucedido, redireciona para o painel do colaborador.
+            // Redireciona para a página de perfil, agora com o colaborador autenticado
             window.location.href = 'profile.html';
             
         } catch (error) {
             console.error("Erro no login do colaborador:", error);
-            if (error.code === 'auth/invalid-credential') {
-                showMessageModal("E-mail ou senha incorretos. Verifique os dados ou, se for seu primeiro acesso, clique em 'Esqueci minha senha' para criar uma.");
-            } else {
-                showMessageModal("Ocorreu um erro ao tentar fazer login. Verifique sua conexão e tente novamente.");
-            }
+            showMessageModal("Token de acesso inválido ou expirado. Por favor, solicite um novo ao seu gestor.");
         } finally {
             submitButton.disabled = false;
         }
     });
 
+    // O link de "Esqueci a senha" para o colaborador é um pouco diferente.
+    // Ele não pode redefinir a senha sem saber o e-mail associado ao token.
+    // A melhor abordagem é instruí-lo a contatar o gestor.
     forgotPasswordLink.addEventListener('click', async (e) => {
         e.preventDefault();
-        const email = emailInput.value.trim();
-        if (!email) {
-            showMessageModal("Por favor, digite seu e-mail no campo correspondente antes de solicitar a redefinição de senha.");
-            return;
-        }
-        try {
-            await sendPasswordResetEmail(auth, email);
-            showMessageModal("Se o seu e-mail estiver cadastrado, um link para criar (primeiro acesso) ou redefinir sua senha foi enviado.");
-        } catch (error) {
-            console.error("Erro ao enviar e-mail de redefinição:", error);
-            showMessageModal("Ocorreu um erro. Verifique o e-mail digitado e tente novamente.");
-        }
+        showMessageModal("Para criar ou redefinir sua senha, entre em contato com o seu gestor. Ele poderá reenviar o convite para o seu e-mail, que conterá um link para definição de senha.");
     });
 });

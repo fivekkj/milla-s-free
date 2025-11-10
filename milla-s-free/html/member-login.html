@@ -27,13 +27,19 @@
     <div class="fixed inset-0 modal-backdrop flex items-center justify-center z-50">
         <div class="card p-8 w-full max-w-sm">
             <div class="text-center mb-6">
-                <a href="landing.html"><img src="../imagens/millasfull.png" alt="Milla's Free Logo" class="h-12 mx-auto mb-4"></a>
+                <a href="landing.html">
+                    <img src="../imagens/millasfull.png" alt="Milla's Free Logo" class="h-12 mx-auto mb-4 block dark:hidden">
+                    <img src="../imagens/millas_escuro.png" alt="Milla's Free Logo" class="h-12 mx-auto mb-4 hidden dark:block">
+                </a>
                 <h3 class="text-xl font-bold">Acessar como Colaborador</h3>
             </div>
             <form id="member-login-form">
                 <div class="mb-4">
                     <label for="login-token" class="block text-sm font-medium mb-1">Token de Acesso</label>
                     <input id="login-token" type="text" placeholder="Cole seu token aqui" required class="w-full p-2 text-center">
+                </div>
+                <div class="text-center mb-4">
+                    <a href="#" id="member-forgot-password" class="text-xs text-primary hover:underline">Esqueci minha senha / Primeiro acesso</a>
                 </div>
                 <button type="submit" class="btn btn-primary w-full mt-2">Entrar</button>
                 <div class="text-center mt-4">

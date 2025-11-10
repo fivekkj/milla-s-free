@@ -19,7 +19,7 @@ async function exportDataToCSV() {
     let membersCSV = "Nome,Email,Token\n";
     membersSnapshot.forEach(doc => {
         const member = doc.data();
-        membersCSV += `"${member.name}","${member.email}","${member.loginToken}"\n`;
+        membersCSV += `"${member.name}","${member.email}","${doc.id}"\n`;
     });
     downloadCSV(membersCSV, 'membros.csv');
 

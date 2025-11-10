@@ -209,6 +209,23 @@
             </div>
         </div>
 
+        <!-- Modal para Exibir o Token -->
+        <div id="show-token-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50">
+            <div class="card p-6 rounded-xl shadow-xl w-full max-w-md text-center">
+                <h3 class="text-xl font-bold mb-2">Token de Acesso do Colaborador</h3>
+                <p class="text-secondary mb-4">Copie e envie este token para o colaborador. Ele é usado para o primeiro acesso.</p>
+                <div class="bg-base-300 p-4 rounded-lg mb-6">
+                    <p id="show-token-value" class="text-lg font-mono break-all">carregando...</p>
+                </div>
+                <div class="flex justify-center space-x-4">
+                    <button id="close-token-modal-button" class="btn btn-secondary">Fechar</button>
+                    <button id="copy-token-button" class="btn btn-primary">
+                        <i class="fas fa-copy mr-2"></i>Copiar Token
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal de Perfil (Reutilizável) -->
         <div id="profile-modal" class="dropdown-menu hidden z-40 !right-8 !top-[70px]">
             <div class="card p-4 w-full max-w-xs">
