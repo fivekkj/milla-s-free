@@ -36,9 +36,10 @@ service cloud.firestore {
     match /members/{memberId} {
       // REGRAS SEM CLOUD FUNCTIONS:
       // get: Permite que qualquer pessoa com o link (token) verifique se o membro existe para fazer login.
-      // list: Apenas o admin da empresa pode listar todos os membros.
       allow get: if true;
-      allow list: if isCompanyAdmin(resource.data.companyId);
+      // read (get e list): Permite que um admin leia os dados dos membros da sua própria empresa.
+      // O Firestore aplicará a cláusula 'where' da query a esta regra.
+      allow read: if isCompanyAdmin(resource.data.companyId);
       
       // Apenas um admin pode criar novos membros (apontando para a sua própria empresa).
       allow create: if isCompanyAdmin(request.resource.data.companyId);

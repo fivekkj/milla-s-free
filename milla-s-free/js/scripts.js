@@ -113,8 +113,8 @@ function initDashboardPage(user) {
                     deleteTimeEntry(entryId);
                 }
             } else if (button.classList.contains('approve-button')) {
-                await updateDoc(doc(db, "timeEntries", entryId), { status: 'approved' });
-                showMessageModal("Entrada de tempo aprovada com sucesso.");
+                await updateDoc(doc(db, "timeEntries", entryId), { status: 'approved' }); // Atualiza o status no banco de dados
+                // A tabela será atualizada automaticamente pelo onSnapshot. Não é necessária nenhuma ação extra.
             } else if (button.classList.contains('reject-button')) {
                 const confirmed = await showMessageModal("Tem certeza que deseja rejeitar e excluir esta entrada de tempo?", 'confirm');
                 if (confirmed) deleteTimeEntry(entryId);
@@ -312,8 +312,12 @@ async function fetchTimeEntriesPage(direction) {
     } else if (direction === 'prev' && currentPage > 1) {
         currentPage--;
         const prevPageCursor = pageQueryCursors[currentPage - 1];
-        q = query(...baseQuery, startAfter(prevPageCursor), limit(pageSize));
+        q = query(...baseQuery, startAfter(prevPageCursor), limit(pageSize)); // Inicia após o cursor da página anterior
+    } else if (direction === 'current') {
+        const currentPageCursor = pageQueryCursors[currentPage - 1];
+        q = currentPageCursor ? query(...baseQuery, startAfter(currentPageCursor), limit(pageSize)) : query(...baseQuery, limit(pageSize));
     } else {
+        // Se a direção for inválida ou não houver mais páginas, não faz nada.
         return;
     }
 
@@ -358,6 +362,9 @@ async function setupTimeEntriesListener() {
     // Esta função foi substituída por fetchTimeEntriesPage para implementar
     // a paginação no lado do servidor e melhorar drasticamente a performance.
     // A carga inicial agora é feita em initializeFirebase.
+    // REATIVANDO PARA ATUALIZAÇÕES EM TEMPO REAL:
+    const q = query(collection(db, 'timeEntries'), where('companyId', '==', userId));
+    onSnapshot(q, () => fetchTimeEntriesPage('current'));
 }
 
 function setupMembersListener() {
@@ -373,10 +380,7 @@ function setupMembersListener() {
             statTeamMembers.textContent = snapshot.size;
         }
         populateMemberFilter(membersMap);
-        memberFilter.value = currentFilterValue;
-
-        // Re-render a página atual, pois os nomes dos membros podem ter mudado
-        fetchTimeEntriesPage('first');
+        memberFilter.value = currentFilterValue; // Mantém o filtro selecionado
     });
 }
 
@@ -532,6 +536,7 @@ async function saveEditedEntry() {
         });
         showMessageModal("Entrada de tempo atualizada com sucesso.");
         editModal.classList.add('hidden');
+        // A atualização automática já é tratada pelo onSnapshot.
     } catch (error) {
         console.error("Erro ao atualizar documento:", error);
         showMessageModal("Erro ao salvar a edição. Tente novamente.");

@@ -86,6 +86,52 @@ async function handleAccountDeletion() {
     }
 }
 
+// Função para atualizar as cores dos membros antigos
+async function updateExistingMemberColors() {
+    const updateButton = document.getElementById('update-member-colors-button');
+    toggleButtonLoading(updateButton, true);
+
+    const MEMBER_COLOR_PALETTE = [
+        '#8a5cf6', '#f59e0b', '#10b981', '#3b82f6', '#ef4444',
+        '#6366f1', '#d946ef', '#06b6d4', '#84cc16', '#ec4899'
+    ];
+
+    try {
+        // CORREÇÃO: Busca apenas os membros da empresa do admin logado.
+        const q = query(collection(db, "members"), where("companyId", "==", userId));
+        const membersSnapshot = await getDocs(q);
+        
+        const batch = writeBatch(db);
+        let updatesMade = 0;
+        let colorIndex = 0;
+
+        // Conta quantos membros já têm cor para continuar a paleta
+        membersSnapshot.forEach(doc => {
+            if (doc.data().color) colorIndex++;
+        });
+
+        membersSnapshot.forEach(doc => {
+            if (!doc.data().color) { // Atualiza apenas se não tiver cor
+                const newColor = MEMBER_COLOR_PALETTE[colorIndex % MEMBER_COLOR_PALETTE.length];
+                batch.update(doc.ref, { color: newColor });
+                updatesMade++;
+                colorIndex++;
+            }
+        });
+
+        if (updatesMade > 0) {
+            await batch.commit();
+            showMessageModal(`${updatesMade} colaborador(es) foram atualizados com uma nova cor. Recarregue a página de relatórios.`);
+        } else {
+            showMessageModal("Todos os colaboradores já possuem uma cor definida. Nenhuma atualização foi necessária.");
+        }
+    } catch (error) {
+        console.error('Erro ao atualizar cores:', error);
+        showMessageModal("Ocorreu um erro ao tentar atualizar as cores dos colaboradores.");
+    } finally {
+        toggleButtonLoading(updateButton, false);
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     initThemeManager('theme-toggle');
@@ -101,6 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const exportDataButton = document.getElementById('export-data-button');
     const deleteAccountButton = document.getElementById('delete-account-button');
+    const updateColorsButton = document.getElementById('update-member-colors-button');
     const reauthModal = document.getElementById('reauth-modal');
     const reauthForm = document.getElementById('reauth-form');
     const reauthCancelButton = document.getElementById('reauth-cancel-button');
@@ -186,6 +233,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle Data Export
     if (exportDataButton) {
         exportDataButton.addEventListener('click', exportDataToCSV);
+    }
+
+    // Handle Member Color Update
+    if (updateColorsButton) {
+        updateColorsButton.addEventListener('click', updateExistingMemberColors);
     }
 
     // Handle Account Deletion

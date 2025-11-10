@@ -126,7 +126,7 @@ function processDataForCharts(entries) {
         projectDataRaw[projectName].memberContributions[entry.memberId] = (projectDataRaw[projectName].memberContributions[entry.memberId] || 0) + entry.duration;
 
         // Member Data
-        // CORREÇÃO: Agrupa as horas pelo ID único do membro, não pelo nome.
+        // Agrupa as horas pelo ID único do membro.
         memberData[entry.memberId] = (memberData[entry.memberId] || 0) + entry.duration;
 
         // Trend Data
@@ -161,19 +161,19 @@ function processDataForCharts(entries) {
     };
 
     // Mapeia os dados de horas por membro para usar nomes e cores
-    // CORREÇÃO: Itera sobre os IDs dos membros para buscar nome e cor de forma confiável.
+    // CORREÇÃO FINAL: Garante que a busca de nome e cor seja feita pelo ID.
     const memberLabels = Object.keys(memberData).map(id => membersMap.get(id)?.name || 'Desconhecido');
     const memberHoursData = Object.values(memberData).map(seconds => (seconds / 3600).toFixed(2));
     const memberColors = Object.keys(memberData).map(id => membersMap.get(id)?.color || '#cccccc');
 
-    const processedMemberData = {
+    const processedMemberDataFinal = {
         labels: memberLabels,
         data: memberHoursData,
         colors: memberColors
     };
 
     renderHoursByProjectChart(processedProjectData);
-    renderHoursByMemberChart(processedMemberData); // Passa os dados processados
+    renderHoursByMemberChart(processedMemberDataFinal); // Passa os dados corretos dos membros
     renderHoursTrendChart(trendData);
 }
 
