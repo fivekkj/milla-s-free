@@ -12,7 +12,8 @@ let allTasks = [];
 let membersCurrentPage = 1;
 const membersPageSize = 5;
  
-let companyEmailDisplay, addMemberButton, membersList, createMemberModal, createMemberForm, cancelCreateMemberButton,
+let companyEmailDisplay, addMemberButton, membersList, createMemberModal, createMemberForm, cancelCreateMemberButton, 
+    showTokenModal, showTokenValue, copyTokenButton, closeTokenModalButton,
     editMemberModal, editMemberForm, cancelEditMemberButton, saveEditMemberButton, editMemberIdInput, editMemberNameInput,
     editMemberEmailInput, searchMemberInput, membersPaginationControls, prevMembersPageButton, nextMembersPageButton,
     addTaskForm, newTaskNameInput, tasksList, editTaskModal, editTaskForm, cancelEditTaskButton, saveEditTaskButton,
@@ -25,6 +26,10 @@ function initUIElements() {
     createMemberModal = document.getElementById('create-member-modal');
     createMemberForm = document.getElementById('create-member-form');
     cancelCreateMemberButton = document.getElementById('cancel-create-member-button');
+    showTokenModal = document.getElementById('show-token-modal');
+    showTokenValue = document.getElementById('show-token-value');
+    copyTokenButton = document.getElementById('copy-token-button');
+    closeTokenModalButton = document.getElementById('close-token-modal-button');
     editMemberModal = document.getElementById('edit-member-modal');
     editMemberForm = document.getElementById('edit-member-form');
     cancelEditMemberButton = document.getElementById('cancel-edit-member-button');
@@ -85,6 +90,9 @@ function createMemberHTML(member) {
             </td>
             <td class="text-right">
                 <div class="flex items-center justify-end gap-2">
+                    <button title="Ver Token de Acesso" class="view-token-button btn-icon" data-id="${member.id}">
+                        <i class="fas fa-key"></i>
+                    </button>
                     <button title="Editar Colaborador" class="edit-member-button btn-icon" data-id="${member.id}" data-name="${sanitize(member.name)}" data-email="${sanitize(member.email)}">
                         <i class="fas fa-edit"></i>
                     </button>
@@ -272,25 +280,43 @@ function initCompanyDashboardPage(user) {
             const memberEmail = createMemberForm['member-email'].value;
 
             try {
-                // Chama a Cloud Function para criar o membro de forma segura.
-                // NOTA: Para isso funcionar com as regras atuais, o admin precisa do claim 'role: admin'.
-                // Como o login padrão não adiciona isso, a regra no Firestore precisa ser ajustada.
-                // A chamada à função em si é a prática correta.
-                const createMember = httpsCallable(functions, 'createMember');
-                await createMember({ name: memberName, email: memberEmail });
+                // LÓGICA SEM CLOUD FUNCTION: Adiciona o membro diretamente no Firestore
+                const newMemberRef = await addDoc(collection(db, 'members'), {
+                    name: memberName,
+                    email: memberEmail,
+                    companyId: userId // O ID do gestor logado é o ID da empresa.
+                });
 
+                // O ID do novo documento será o token de acesso do colaborador.
+                const newMemberId = newMemberRef.id;
+                
                 createMemberModal.classList.add('hidden');
                 createMemberForm.reset();
-                // A lista será atualizada automaticamente pelo onSnapshot.
-                showMessageModal(`Colaborador "${memberName}" adicionado com sucesso!`);
+
+                // Exibe o modal com o token para o gestor copiar
+                showTokenValue.textContent = newMemberId;
+                showTokenModal.classList.remove('hidden');
             } catch (error) {
                 console.error("Erro ao adicionar colaborador:", error);
-                // Mensagem de erro mais específica baseada na resposta da Cloud Function
-                const errorMessage = error.message.includes("permission-denied") ? "Você não tem permissão para adicionar colaboradores." : "Erro ao adicionar colaborador. Verifique os dados e tente novamente.";
-                showMessageModal(errorMessage);
+                showMessageModal("Erro ao adicionar colaborador. Verifique suas regras de segurança do Firestore e tente novamente.");
             } finally {
                 toggleButtonLoading(submitButton, false);
             }
+        });
+    }
+
+    if (closeTokenModalButton) {
+        closeTokenModalButton.addEventListener('click', () => {
+            showTokenModal.classList.add('hidden');
+        });
+    }
+
+    if (copyTokenButton) {
+        copyTokenButton.addEventListener('click', () => {
+            navigator.clipboard.writeText(showTokenValue.textContent).then(() => {
+                showMessageModal("Token copiado para a área de transferência!");
+                showTokenModal.classList.add('hidden');
+            });
         });
     }
 
@@ -315,6 +341,13 @@ function initCompanyDashboardPage(user) {
                 editMemberNameInput.value = button.dataset.name;
                 editMemberEmailInput.value = button.dataset.email;
                 editMemberModal.classList.remove('hidden');
+            }
+
+            if (button.classList.contains('view-token-button')) {
+                const memberId = button.dataset.id;
+                // Reutiliza o modal existente para mostrar o token
+                showTokenValue.textContent = memberId; // O memberId é o próprio token
+                showTokenModal.classList.remove('hidden');
             }
         });
     }

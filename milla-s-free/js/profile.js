@@ -11,91 +11,84 @@ let timerInterval = null;
 let timerIsRunning = false;
 let timerStartTime = null;
 let timerProjectName = '';
-
-function initUIElements() {
+ 
+function initProfileDropdown() {
     const profileToggle = document.getElementById('profile-toggle');
     const profileModal = document.getElementById('profile-modal');
-    const logoutButton = document.getElementById('logout-button');
-
-    if (profileToggle) {
+ 
+    if (profileToggle && profileModal) {
         profileToggle.addEventListener('click', (e) => {
             e.stopPropagation();
             profileModal.classList.toggle('hidden');
         });
-    }
-
-    document.addEventListener('click', (e) => {
-        if (profileModal && !profileModal.classList.contains('hidden') && !profileModal.contains(e.target) && !profileToggle.contains(e.target)) {
-            profileModal.classList.add('hidden');
-        }
-    });
-
-    if (logoutButton) {
-        logoutButton.addEventListener('click', () => signOut(auth).catch(err => console.error("Logout error", err)));
+ 
+        document.addEventListener('click', (e) => {
+            if (!profileModal.classList.contains('hidden') && !profileModal.contains(e.target) && !profileToggle.contains(e.target)) {
+                profileModal.classList.add('hidden');
+            }
+        });
     }
 }
 
 async function initProfilePage() {
-    initUIElements();
     initThemeManager('theme-toggle');
+    setupLogout();
+    initProfileDropdown();
+    await loadMemberDataFromToken();
+}
 
-    const testToken = localStorage.getItem('memberLoginToken');
-    const isTestMode = testToken === 'dev-a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d';
-
-    if (isTestMode) {
-        // Modo de teste ativado
-        console.log("Modo de teste ativado. Carregando dados de exemplo.");
-        localStorage.removeItem('memberLoginToken'); // Limpa o token de teste
-        memberId = 'dev-a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d'; // ID do documento do membro de teste
-        companyId = 'test-company-id'; // ID da empresa de teste
-        
-        const memberNameDisplay = document.getElementById('member-name-display');
-        if (memberNameDisplay) {
-            memberNameDisplay.textContent = "Colaborador de Teste";
-        }
-        // No modo de teste, buscamos os dados diretamente, sem depender de autenticação.
-        setupTimeEntriesListener();
-        setupTasksListener();
-        setupTimerControls();
-    } else {
-        // Lógica de autenticação normal
-        initializeFirebase();
+function setupLogout() {
+    const logoutButton = document.getElementById('logout-button');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('memberLoginToken');
+            window.location.href = 'landing.html';
+        });
     }
 }
 
-async function initializeFirebase() {
+async function loadMemberDataFromToken() {
+    const token = localStorage.getItem('memberLoginToken');
+
+    if (!token) {
+        console.log("Nenhum token de login de colaborador encontrado. Redirecionando para a página inicial.");
+        window.location.href = 'landing.html';
+        return;
+    }
+
+    memberId = token; // O ID do membro é o próprio token.
+
     try {
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                memberId = user.uid;
-                console.log("Colaborador autenticado:", memberId);
+        // Busca os dados do colaborador no Firestore usando o token como ID.
+        const memberDocRef = doc(db, "members", memberId);
+        const memberDocSnap = await getDoc(memberDocRef);
 
-                const memberDocRef = doc(db, "members", memberId);
-                const memberDocSnap = await getDoc(memberDocRef);
+        if (memberDocSnap.exists()) {
+            const memberData = memberDocSnap.data();
+            companyId = memberData.companyId; // Pega o ID da empresa associada.
 
-                if (memberDocSnap.exists()) {
-                    const memberData = memberDocSnap.data();
-                    companyId = memberData.companyId;
-
-                    const memberNameDisplay = document.getElementById('member-name-display');
-                    if (memberNameDisplay) {
-                        memberNameDisplay.textContent = memberData.name;
-                    }
-
-                    setupTimeEntriesListener();
-                    setupTasksListener();
-                    setupTimerControls();
-                } else {
-                    console.error("Documento do membro não encontrado!");
-                    await signOut(auth).catch(err => console.error("Sign out failed", err));
-                }
-            } else {
-                console.log("Nenhum colaborador logado. Redirecionando...");
-                window.location.href = 'landing.html';
+            // Atualiza o nome do colaborador na tela.
+            const memberNameDisplay = document.getElementById('member-name-display');
+            if (memberNameDisplay) {
+                memberNameDisplay.textContent = memberData.name;
             }
-        });
+
+            // Com os IDs em mãos, agora podemos carregar as outras informações.
+            setupTimeEntriesListener();
+            setupTasksListener();
+            setupTimerControls();
+        } else {
+            // Se o token salvo for inválido ou o membro tiver sido excluído.
+            console.error("Token inválido. O documento do membro não foi encontrado no Firestore.");
+            localStorage.removeItem('memberLoginToken'); // Limpa o token inválido
+            window.location.href = 'landing.html';
+        }
     } catch (error) {
-        console.error("Erro na inicialização do Firebase:", error);
+        console.error("Erro ao carregar dados do colaborador:", error);
+        showMessageModal("Ocorreu um erro ao carregar seus dados.");
+        localStorage.removeItem('memberLoginToken');
+        window.location.href = 'landing.html';
     }
 }
 
@@ -130,6 +123,12 @@ function setupTimerControls() {
     const stopTimer = async () => {
         if (!timerIsRunning) return;
         clearInterval(timerInterval);
+        if (!timerProjectName) {
+            console.error("O nome do projeto está vazio. A entrada de tempo não será salva.");
+            showMessageModal("Ocorreu um erro: o nome do projeto estava vazio. A entrada de tempo não foi salva.");
+            // Resetar o timer sem salvar
+        }
+
         const duration = Date.now() - timerStartTime;
         await saveTimeEntry(timerProjectName, duration);
 

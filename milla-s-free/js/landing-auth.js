@@ -1,7 +1,7 @@
-import { auth, functions } from './firebase-services.js';
+import { auth, db } from './firebase-services.js'; // Trocamos 'functions' por 'db'
 import { showMessageModal } from './ui-helpers.js';
-import { signInWithEmailAndPassword, setPersistence, browserSessionPersistence, browserLocalPersistence, sendPasswordResetEmail, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
+import { signInWithEmailAndPassword, setPersistence, browserSessionPersistence, browserLocalPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"; // Importamos getDoc
 
 export function initLandingAuth() {
     const loginModal = document.getElementById('login-modal');
@@ -13,7 +13,6 @@ export function initLandingAuth() {
     const loginForm = document.getElementById('login-form');
     const loginErrorEl = document.getElementById('login-error-message');
     const allOpenTriggers = document.querySelectorAll('.open-login-modal-trigger');
-    // O formulário de login do membro agora está na landing page
     const memberLoginForm = document.getElementById('member-login-form');
 
     if (!loginModal || !openLoginModalBtn || !loginForm || !loginErrorEl) {
@@ -41,7 +40,7 @@ export function initLandingAuth() {
     document.addEventListener('click', (e) => {
         // Verifica se o modal está visível e se o clique foi fora do modal e fora do botão que o abre
         const isClickInsideLogin = loginModal.contains(e.target) || openLoginModalBtn.contains(e.target) || Array.from(allOpenTriggers).some(t => t.contains(e.target));
-        const isClickInsideMemberLogin = memberLoginModal.contains(e.target) || openMemberLoginLink.contains(e.target) || footerOpenMemberLoginLink.contains(e.target);
+        const isClickInsideMemberLogin = memberLoginModal.contains(e.target) || (openMemberLoginLink && openMemberLoginLink.contains(e.target)) || (footerOpenMemberLoginLink && footerOpenMemberLoginLink.contains(e.target));
 
         if (!loginModal.classList.contains('hidden') && !isClickInsideLogin && !isClickInsideMemberLogin) {
             loginModal.classList.add('hidden');
@@ -144,26 +143,19 @@ export function initLandingAuth() {
                 return;
             }
 
-            // Adiciona um token de teste para bypassar a autenticação real
-            if (token === 'dev-a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d') {
-                console.log("Token de teste detectado. Redirecionando para o perfil de teste.");
-                localStorage.setItem('memberLoginToken', token);
-                window.location.href = 'profile.html';
-                return;
-            }
-
             try {
-                // Chama a Cloud Function para obter um token de autenticação customizado
-                const getMemberAuthToken = httpsCallable(functions, 'getMemberAuthToken');
-                const result = await getMemberAuthToken({ memberId: token });
-                const customAuthToken = result.data.token;
+                // LÓGICA SEM CLOUD FUNCTION: Verifica se o token (que é o ID do documento) existe no Firestore.
+                const memberDocRef = doc(db, "members", token);
+                const memberDocSnap = await getDoc(memberDocRef);
 
-                // Faz login com o token customizado
-                await signInWithCustomToken(auth, customAuthToken);
-
-                // Redireciona para a página de perfil, agora com o colaborador autenticado
-                window.location.href = 'profile.html';
-
+                if (memberDocSnap.exists()) {
+                    // O token é válido. Salva no localStorage para a página de perfil usar.
+                    localStorage.setItem('memberLoginToken', token);
+                    window.location.href = 'profile.html';
+                } else {
+                    // O token não foi encontrado no banco de dados.
+                    throw new Error("Token inválido");
+                }
             } catch (error) {
                 console.error("Erro na autenticação do colaborador:", error);
                 showMessageModal("Token de acesso inválido ou expirado. Por favor, solicite um novo ao seu gestor.");
