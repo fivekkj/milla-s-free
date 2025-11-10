@@ -80,12 +80,12 @@ function initDashboardPage(user) {
     initUIElements();
 
     // A lógica do timer foi removida do painel principal, então verificamos se os elementos existem.
-    if (projectInput) {
-        projectInput.disabled = false;
-    }
+    if (projectInput) projectInput.disabled = false;
 
-    fetchTimeEntriesPage('first');
-    setupMembersListener();
+    // CORREÇÃO: Garante que os membros sejam carregados ANTES das entradas de tempo.
+    setupMembersListener().then(() => {
+        fetchTimeEntriesPage('first');
+    });
     setupRealtimeChart();
     setupTasksListener();
 
@@ -112,7 +112,7 @@ function initDashboardPage(user) {
                 if (confirmed) {
                     deleteTimeEntry(entryId);
                 }
-            } else if (button.classList.contains('approve-button')) {
+            } else if (button.classList.contains('approve-button')) { 
                 await updateDoc(doc(db, "timeEntries", entryId), { status: 'approved' }); // Atualiza o status no banco de dados
                 // A tabela será atualizada automaticamente pelo onSnapshot. Não é necessária nenhuma ação extra.
             } else if (button.classList.contains('reject-button')) {
@@ -237,7 +237,8 @@ function renderTimeEntries(entries) {
         return;
     }
     entries.forEach(entry => {
-        const memberName = entry.memberId ? (membersMap.get(entry.memberId) || 'Colaborador Desconhecido') : 'Empresa';
+        // CORREÇÃO: Busca o nome do membro a partir do objeto completo.
+        const memberName = entry.memberId ? (membersMap.get(entry.memberId)?.name || 'Colaborador Desconhecido') : 'Empresa';
         const isPending = entry.status === 'pending';
         const statusInfo = {
             approved: { text: 'Aprovado', class: 'status-approved' },
@@ -349,7 +350,8 @@ function populateMemberFilter(membersMap) {
     companyOption.textContent = 'Apenas Empresa';
     memberFilter.appendChild(companyOption);
 
-    membersMap.forEach((name, id) => {
+    membersMap.forEach((memberData, id) => {
+        const name = memberData.name;
         const option = document.createElement('option');
         option.value = id;
         option.textContent = name;
@@ -367,20 +369,24 @@ async function setupTimeEntriesListener() {
     onSnapshot(q, () => fetchTimeEntriesPage('current'));
 }
 
-function setupMembersListener() {
-    if (!db || !userId) return;
-    const q = query(collection(db, 'members'), where('companyId', '==', userId));
-    onSnapshot(q, (snapshot) => {
-        const currentFilterValue = memberFilter.value;
-        membersMap.clear();
-        snapshot.forEach(doc => {
-            membersMap.set(doc.id, doc.data().name);
+async function setupMembersListener() {
+    if (!db || !userId) return Promise.resolve();
+
+    return new Promise((resolve) => {
+        const q = query(collection(db, 'members'), where('companyId', '==', userId));
+        onSnapshot(q, (snapshot) => {
+            const currentFilterValue = memberFilter.value;
+            membersMap.clear();
+            snapshot.forEach(doc => {
+                // CORREÇÃO: Armazena o objeto completo do membro (nome e cor).
+                membersMap.set(doc.id, doc.data());
+            });
+            if (statTeamMembers) statTeamMembers.textContent = snapshot.size;
+            
+            populateMemberFilter(membersMap);
+            memberFilter.value = currentFilterValue;
+            resolve(); // Resolve a Promise quando os membros forem carregados.
         });
-        if (statTeamMembers) {
-            statTeamMembers.textContent = snapshot.size;
-        }
-        populateMemberFilter(membersMap);
-        memberFilter.value = currentFilterValue; // Mantém o filtro selecionado
     });
 }
 

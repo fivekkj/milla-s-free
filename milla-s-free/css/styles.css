@@ -656,3 +656,10 @@ html:not(.dark) .plan-highlight-cell {
 .plan-details[open] > .plan-summary::after {
     transform: rotate(180deg); /* Gira o ícone quando aberto */
 }
+
+/* --- Correção para o formulário de contato na página de planos --- */
+/* Garante que o texto dentro dos inputs seja da cor primária do tema, mesmo que o container pai seja text-white */
+#contact-form input,
+#contact-form textarea {
+    color: var(--text-primary);
+}

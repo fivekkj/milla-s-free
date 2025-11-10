@@ -235,19 +235,21 @@ function initReportsPage(user) {
         }
     });
 
-    // Busca os membros primeiro, depois inicializa os listeners
-    const membersQuery = query(collection(db, "members"), where("companyId", "==", userId));
-    getDocs(membersQuery).then(membersSnapshot => {
-        membersSnapshot.forEach(doc => membersMap.set(doc.id, doc.data()));
-
-        // Em seguida, busca os dados para os gráficos
+    // CORREÇÃO: Garante que os membros sejam carregados ANTES de buscar os dados dos gráficos.
+    fetchMembersData().then(() => {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        fetchData(thirtyDaysAgo, new Date()); // Carrega os últimos 30 dias por padrão
+        fetchData(thirtyDaysAgo, new Date());
     });
 
     // Recarrega os gráficos quando o tema muda
     document.getElementById('theme-toggle').addEventListener('click', () => processDataForCharts(allTimeEntries));
+}
+
+async function fetchMembersData() {
+    const membersQuery = query(collection(db, "members"), where("companyId", "==", userId));
+    const querySnapshot = await getDocs(membersQuery);
+    querySnapshot.forEach((doc) => membersMap.set(doc.id, doc.data()));
 }
 
 initializeApp(initReportsPage, db);
