@@ -451,6 +451,7 @@ function initCompanyDashboardPage(user) {
             try {
                 await updateDoc(taskDocRef, { name: newName });
                 editTaskModal.classList.add('hidden');
+                // A lista de tarefas já é reativa com onSnapshot, mas uma renderização manual garante a atualização.
                 showMessageModal("Tarefa atualizada com sucesso.");
             } catch (error) {
                 console.error("Erro ao atualizar tarefa:", error);
