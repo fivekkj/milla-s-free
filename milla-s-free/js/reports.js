@@ -9,6 +9,12 @@ let allTimeEntries = [];
 let membersMap = new Map();
 let userId;
 
+// Paleta de cores para os gráficos
+const CHART_COLOR_PALETTE = [
+    '#8a5cf6', '#f59e0b', '#10b981', '#3b82f6', '#ef4444',
+    '#6366f1', '#d946ef', '#06b6d4', '#84cc16', '#ec4899'
+];
+
 // --- CHART RENDERING FUNCTIONS ---
 
 function renderHoursByProjectChart(data) {
@@ -18,11 +24,11 @@ function renderHoursByProjectChart(data) {
     hoursByProjectChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: Object.keys(data),
+            labels: data.labels,
             datasets: [{
                 label: 'Horas',
-                data: Object.values(data).map(seconds => (seconds / 3600).toFixed(2)),
-                backgroundColor: '#8a5cf6',
+                data: data.data,
+                backgroundColor: data.colors,
                 borderRadius: 5,
             }]
         },
@@ -41,16 +47,14 @@ function renderHoursByMemberChart(data) {
     const ctx = document.getElementById('hours-by-member-chart').getContext('2d');
     if (hoursByMemberChart) hoursByMemberChart.destroy();
 
-    const backgroundColors = ['#8a5cf6', '#60519b', '#a78bfa', '#c4b5fd', '#ddd6fe']; // Mantemos cores específicas para este gráfico
-
     hoursByMemberChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: Object.keys(data),
+            labels: data.labels,
             datasets: [{
                 label: 'Horas por Membro',
-                data: Object.values(data).map(seconds => (seconds / 3600).toFixed(2)),
-                backgroundColor: backgroundColors,
+                data: data.data,
+                backgroundColor: data.colors,
                 borderColor: document.documentElement.classList.contains('dark') ? '#2a223d' : '#ffffff',
                 borderWidth: 4,
             }]
@@ -98,7 +102,7 @@ function renderHoursTrendChart(data) {
 // --- DATA PROCESSING ---
 
 function processDataForCharts(entries) {
-    const projectData = {};
+    const projectDataRaw = {}; // Armazena { projectName: { totalDuration: X, memberContributions: { memberId1: Y, memberId2: Z } } }
     const memberData = {};
     const trendData = {};
 
@@ -111,12 +115,19 @@ function processDataForCharts(entries) {
     }
 
     entries.forEach(entry => {
+        if (entry.status !== 'approved') return; // Processa apenas horas aprovadas
+
         // Project Data
-        projectData[entry.projectName] = (projectData[entry.projectName] || 0) + entry.duration;
+        const projectName = entry.projectName;
+        if (!projectDataRaw[projectName]) {
+            projectDataRaw[projectName] = { totalDuration: 0, memberContributions: {} };
+        }
+        projectDataRaw[projectName].totalDuration += entry.duration;
+        projectDataRaw[projectName].memberContributions[entry.memberId] = (projectDataRaw[projectName].memberContributions[entry.memberId] || 0) + entry.duration;
 
         // Member Data
-        const memberName = membersMap.get(entry.memberId) || 'Empresa';
-        memberData[memberName] = (memberData[memberName] || 0) + entry.duration;
+        // CORREÇÃO: Agrupa as horas pelo ID único do membro, não pelo nome.
+        memberData[entry.memberId] = (memberData[entry.memberId] || 0) + entry.duration;
 
         // Trend Data
         const entryDate = new Date(entry.timestamp.seconds * 1000);
@@ -126,8 +137,43 @@ function processDataForCharts(entries) {
         }
     });
 
-    renderHoursByProjectChart(projectData);
-    renderHoursByMemberChart(memberData);
+    // Processa projectDataRaw para gerar labels, data e colors para o gráfico de projetos
+    const projectLabels = Object.keys(projectDataRaw);
+    const projectHoursData = projectLabels.map(name => (projectDataRaw[name].totalDuration / 3600).toFixed(2));
+    const projectColors = projectLabels.map(name => {
+        const contributions = projectDataRaw[name].memberContributions;
+        let dominantMemberId = null;
+        let maxDuration = 0;
+        for (const memberId in contributions) {
+            if (contributions[memberId] > maxDuration) {
+                maxDuration = contributions[memberId];
+                dominantMemberId = memberId;
+            }
+        }
+        // Usa a cor do membro dominante, ou uma cor padrão se não houver
+        return membersMap.get(dominantMemberId)?.color || '#cccccc';
+    });
+
+    const processedProjectData = {
+        labels: projectLabels,
+        data: projectHoursData,
+        colors: projectColors
+    };
+
+    // Mapeia os dados de horas por membro para usar nomes e cores
+    // CORREÇÃO: Itera sobre os IDs dos membros para buscar nome e cor de forma confiável.
+    const memberLabels = Object.keys(memberData).map(id => membersMap.get(id)?.name || 'Desconhecido');
+    const memberHoursData = Object.values(memberData).map(seconds => (seconds / 3600).toFixed(2));
+    const memberColors = Object.keys(memberData).map(id => membersMap.get(id)?.color || '#cccccc');
+
+    const processedMemberData = {
+        labels: memberLabels,
+        data: memberHoursData,
+        colors: memberColors
+    };
+
+    renderHoursByProjectChart(processedProjectData);
+    renderHoursByMemberChart(processedMemberData); // Passa os dados processados
     renderHoursTrendChart(trendData);
 }
 
@@ -189,10 +235,10 @@ function initReportsPage(user) {
         }
     });
 
-    // Primeiro, busca os membros para mapear IDs para nomes
+    // Busca os membros primeiro, depois inicializa os listeners
     const membersQuery = query(collection(db, "members"), where("companyId", "==", userId));
     getDocs(membersQuery).then(membersSnapshot => {
-        membersSnapshot.forEach(doc => membersMap.set(doc.id, doc.data().name));
+        membersSnapshot.forEach(doc => membersMap.set(doc.id, doc.data()));
 
         // Em seguida, busca os dados para os gráficos
         const thirtyDaysAgo = new Date();

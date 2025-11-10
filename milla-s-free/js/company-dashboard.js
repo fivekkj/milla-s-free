@@ -11,6 +11,12 @@ let allMembers = [];
 let allTasks = [];
 let membersCurrentPage = 1;
 const membersPageSize = 5;
+
+// Paleta de cores para atribuir aos novos membros
+const MEMBER_COLOR_PALETTE = [
+    '#8a5cf6', '#f59e0b', '#10b981', '#3b82f6', '#ef4444',
+    '#6366f1', '#d946ef', '#06b6d4', '#84cc16', '#ec4899'
+];
  
 let companyEmailDisplay, addMemberButton, membersList, createMemberModal, createMemberForm, cancelCreateMemberButton, 
     showTokenModal, showTokenValue, copyTokenButton, closeTokenModalButton,
@@ -280,10 +286,14 @@ function initCompanyDashboardPage(user) {
             const memberEmail = createMemberForm['member-email'].value;
 
             try {
+                // Escolhe uma cor da paleta de forma cíclica
+                const colorIndex = allMembers.length % MEMBER_COLOR_PALETTE.length;
+                const memberColor = MEMBER_COLOR_PALETTE[colorIndex];
                 // LÓGICA SEM CLOUD FUNCTION: Adiciona o membro diretamente no Firestore
                 const newMemberRef = await addDoc(collection(db, 'members'), {
                     name: memberName,
                     email: memberEmail,
+                    color: memberColor, // Salva a cor junto com os dados do membro
                     companyId: userId // O ID do gestor logado é o ID da empresa.
                 });
 

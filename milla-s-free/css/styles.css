@@ -656,4 +656,3 @@ html:not(.dark) .plan-highlight-cell {
 .plan-details[open] > .plan-summary::after {
     transform: rotate(180deg); /* Gira o ícone quando aberto */
 }
-}
