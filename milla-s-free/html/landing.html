@@ -65,18 +65,18 @@
                     <form id="login-form">
                         <div class="mb-4">
                             <label for="login-email" class="block text-sm font-medium mb-1">Email</label>
-                            <input id="login-email" type="email" required class="w-full p-2 text-sm">
+                            <input id="login-email" type="email" required class="w-full p-2 text-sm" autocomplete="off">
                         </div>
                         <div class="mb-4">
                             <label for="login-password" class="block text-sm font-medium mb-1">Senha</label>
-                            <input id="login-password" type="password" required class="w-full p-2 text-sm">
+                            <input id="login-password" type="password" required class="w-full p-2 text-sm" autocomplete="off">
                         </div>
                         <div class="flex items-center justify-between -mt-2 mb-4">
                             <div class="flex items-center">
                                 <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary">
                                 <label for="remember-me" class="ml-2 block text-xs text-secondary">Lembrar-me</label>
                             </div>
-                            <a href="#" id="forgot-password-link" class="text-xs text-primary hover:underline">Esqueci minha senha</a>
+                            <a href="#" id="forgot-password-link" class="text-xs font-semibold text-primary hover:underline">Esqueci minha senha</a>
                         </div>
                         <button type="submit" class="btn btn-primary w-full">Entrar</button>
                         <div class="text-center mt-3">
@@ -98,7 +98,7 @@
                     <form id="member-login-form">
                         <div class="mb-4">
                             <label for="login-token" class="block text-sm font-medium mb-1">Token de Acesso</label>
-                            <input id="login-token" type="text" placeholder="Cole seu token aqui" required class="w-full p-2 text-center">
+                            <input id="login-token" type="text" placeholder="Cole seu token aqui" required class="w-full p-2 text-center" autocomplete="off">
                         </div>
                         <button type="submit" class="btn btn-primary w-full mt-2">Entrar</button>
                         <div class="text-center mt-3">
@@ -121,7 +121,7 @@
                     O Milla's Free otimiza a gestão de tempo, aumenta a produtividade e promove a transparência entre gestores e colaboradores.
                 </p>
                 <div class="space-x-4 animate-on-scroll delay-2">
-                    <a href="#" class="btn btn-primary text-lg px-8 py-3 btn-to-dashboard open-login-modal-trigger">
+                    <a href="plans.html" class="btn btn-primary text-lg px-8 py-3">
                         Começar Agora
                     </a>
                 </div>
@@ -138,17 +138,17 @@
                         <div class="space-y-6">
                             <div class="text-left">
                                 <label for="hourly-rate" class="block text-sm font-medium mb-1">Valor da sua hora de trabalho (R$)</label>
-                                <input id="hourly-rate" type="number" placeholder="Ex: 50" class="w-full p-3 text-lg">
+                                <input id="hourly-rate" type="number" placeholder="Ex: 50" class="w-full p-3 text-lg" autocomplete="off">
                             </div>
                             <div class="text-left">
                                 <label for="lost-hours" class="block text-sm font-medium mb-1">Horas perdidas por mês com retrabalho</label>
-                                <input id="lost-hours" type="number" placeholder="Ex: 8" class="w-full p-3 text-lg">
+                                <input id="lost-hours" type="number" placeholder="Ex: 8" class="w-full p-3 text-lg" autocomplete="off">
                             </div>
                         </div>
                         <div class="calculator-result text-center p-6 rounded-lg">
                             <p class="text-lg text-secondary">Prejuízo mensal estimado:</p>
                             <p id="loss-result" class="text-5xl font-bold my-2 loss-amount">R$ 0,00</p>
-                            <a href="#" class="btn btn-primary mt-4 btn-to-dashboard open-login-modal-trigger">Quero parar de perder dinheiro</a>
+                            <a href="plans.html" class="btn btn-primary mt-4">Quero parar de perder dinheiro</a>
                         </div>
                     </div>
                 </div>
@@ -389,7 +389,7 @@
                         <li class="flex items-center gap-2"><i class="fas fa-check-circle text-green-500"></i> Gestão de tarefas</li>
                     </ul>
                     <p class="text-xs text-secondary mt-auto pt-4">Para freelancers e times que estão começando.</p>
-                    <a href="payment.html?plan=Básico&price=19.90" class="btn btn-secondary w-full mt-4">Assinar Agora</a>
+                    <a href="payment.html?plan=Básico" class="btn btn-secondary w-full mt-4">Assinar Agora</a>
                 </div>
                 <!-- Plano Essencial -->
                 <div class="card feature-card-landing animate-on-scroll delay-2 pricing-pro relative flex flex-col">
@@ -404,7 +404,7 @@
                         <li class="flex items-center gap-2"><i class="fas fa-check-circle text-green-500"></i> Aprovação de horas</li>
                     </ul>
                     <p class="text-xs text-secondary mt-auto pt-4">Ideal para pequenas equipes e agências.</p>
-                    <a href="payment.html?plan=Essencial&price=49.90" class="btn btn-primary w-full mt-4">Assinar Agora</a>
+                    <a href="payment.html?plan=Essencial" class="btn btn-primary w-full mt-4">Assinar Agora</a>
                 </div>
                 <!-- Plano Profissional -->
                 <div class="card feature-card-landing animate-on-scroll delay-3 flex flex-col">
@@ -419,7 +419,7 @@
                         <li class="flex items-center gap-2"><i class="fas fa-check-circle text-green-500"></i> Suporte prioritário</li>
                     </ul>
                     <p class="text-xs text-secondary mt-auto pt-4">Para equipes em crescimento que precisam de mais controle.</p>
-                    <a href="payment.html?plan=Profissional&price=99.90" class="btn btn-secondary w-full mt-4">Assinar Agora</a>
+                    <a href="payment.html?plan=Profissional" class="btn btn-secondary w-full mt-4">Assinar Agora</a>
                 </div>
             </div>
         </div>
@@ -453,7 +453,7 @@
         <div class="container mx-auto text-center">
             <h3 class="text-3xl md:text-4xl font-bold animate-on-scroll">Pronto para otimizar seu tempo?</h3>
             <p class="text-lg mt-2 mb-8 animate-on-scroll delay-1">Junte-se a centenas de equipes que já estão transformando sua produtividade.</p>
-            <a href="#" class="btn btn-primary text-lg px-8 py-3 animate-on-scroll delay-2 btn-to-dashboard open-login-modal-trigger">
+            <a href="plans.html" class="btn btn-primary text-lg px-8 py-3 animate-on-scroll delay-2">
                 Comece a usar agora
             </a>
         </div>
@@ -463,7 +463,6 @@
     <footer class="section-bg py-8 px-6">
         <div class="container mx-auto text-center">
             <p>&copy; 2025 Milla's Free. Todos os direitos reservados.</p>
-            <a href="#" id="footer-open-member-login-modal" class="text-sm text-secondary hover:text-primary underline mt-2 inline-block">Acessar como Colaborador</a>
             <p class="text-sm mt-2">Desenvolvido como projeto de TCC no SENAI-CTTI em parceria com 3AQ Tecnologia.</p>
         </div>
     </footer>

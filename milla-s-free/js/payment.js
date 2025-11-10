@@ -19,15 +19,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * Atualiza o preço exibido na tela com base no valor fornecido.
-     * @param {number} price - O valor numérico do plano.
+     * @param {string} planName - O nome do plano selecionado (ex: 'Básico').
      */
-    function updatePrice(price) {
+    function updateSelectedPlan(planName) {
+        const price = plans[planName];
         const formattedPrice = price.toLocaleString('pt-BR', {
             style: 'currency',
             currency: 'BRL'
         });
         planPriceElement.textContent = formattedPrice;
-        if (selectedPlanNameElement) selectedPlanNameElement.textContent = Object.keys(plans).find(key => plans[key] === price);
+        if (selectedPlanNameElement) selectedPlanNameElement.textContent = planName;
     }
 
     // Popula o container com botões de plano
@@ -48,8 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Adiciona a classe 'active' ao botão clicado
             button.classList.add('active');
 
-            // Atualiza o preço
-            updatePrice(plans[planName]);
+            // Atualiza o plano e o preço
+            updateSelectedPlan(planName);
         });
     }
 
@@ -65,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (initialButton) {
         initialButton.classList.add('active');
     }
-    updatePrice(plans[selectedPlan]);
+    updateSelectedPlan(selectedPlan);
 
     // --- MÁSCARAS E VALIDAÇÃO DOS INPUTS ---
 

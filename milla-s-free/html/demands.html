@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demandas - Milla's Free</title>
+    <link rel="icon" type="image/png" href="../imagens/milasclock.png" sizes="any">
+    <link rel="stylesheet" href="../css/styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    <script>
+        // Previne o "flash" do tema incorreto (FOUC)
+        (function() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-main">
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="landing.html" class="sidebar-header">
+                <img src="../imagens/millasfull.png" alt="Milla's Free Logo" class="sidebar-logo block dark:hidden">
+                <img src="../imagens/millas_escuro.png" alt="Milla's Free Logo" class="sidebar-logo-dark hidden dark:block">
+            </a>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> <span>Painel</span></a></li>
+                    <li><a href="company-dashboard.html"><i class="fas fa-users"></i> <span>Membros</span></a></li>
+                    <li><a href="demands.html" class="active"><i class="fas fa-tasks"></i> <span>Demandas</span></a></li>
+                    <li><a href="reports.html"><i class="fas fa-chart-pie"></i> <span>Relatórios</span></a></li>
+                    <li><a href="settings.html"><i class="fas fa-cog"></i> <span>Configurações</span></a></li>
+                    <li class="hidden"><a href="profile.html"><i class="fas fa-user-clock"></i> <span>Meu Painel</span></a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <div class="main-content">
+            <header class="main-header">
+                <div class="header-actions">
+                    <button id="theme-toggle" aria-label="Alternar tema" class="theme-toggle-btn">
+                        <i class="fas fa-sun"></i>
+                    </button>
+                    <div id="profile-toggle" class="relative">
+                        <button title="Configurações" class="profile-pic"></button>
+                    </div>
+                </div>
+            </header>
+
+            <main>
+                <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+                    <h1 class="text-3xl font-bold">Gerenciamento de Demandas</h1>
+                    <div class="flex items-center gap-4">
+                        <button id="manage-templates-button" class="btn btn-secondary">
+                            <i class="fas fa-clone"></i> Gerenciar Modelos
+                        </button>
+                        <button id="add-demand-button" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Criar Demanda
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Seção de Demandas -->
+                <div class="card mb-10">
+                    <h2 class="text-xl font-semibold mb-4">Demandas Criadas</h2>
+                    <div id="demands-list" class="space-y-4">
+                        <!-- Demandas serão injetadas aqui pelo JS -->
+                        <p class="text-secondary text-center p-4">Nenhuma demanda criada ainda.</p>
+                    </div>
+                </div>
+
+                <!-- Seção de Gerenciamento de Tarefas (Unificado) -->
+                <div class="card mt-10">
+                    <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
+                        <h2 class="text-xl font-semibold">Gerenciamento de Tarefas</h2>
+                        <p class="text-sm text-secondary">Crie tarefas padrão para reutilizar em suas demandas.</p>
+                    </div>
+
+                    <form id="add-task-form" class="flex items-center gap-2 mb-4" autocomplete="off">
+                        <input type="text" id="new-task-name" name="dashboard_task_name" placeholder="Nome da nova tarefa" required autocomplete="off" class="flex-grow p-2.5">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Adicionar
+                        </button>
+                    </form>
+
+                    <div id="tasks-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                        <!-- Tarefas pré-definidas serão injetadas aqui -->
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modals Container -->
+    <div id="modals-container">
+        <!-- Overlay -->
+        <div id="page-overlay" class="fixed inset-0 bg-black bg-opacity-20 hidden z-30"></div>
+
+        <!-- Modal de Criar/Editar Demanda -->
+        <div id="demand-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50">
+            <div class="card p-6 rounded-xl shadow-xl w-full max-w-lg">
+                <h3 id="demand-modal-title" class="text-xl font-bold mb-4">Criar Nova Demanda</h3>
+                <form id="demand-form">
+                    <input type="hidden" id="demand-id">
+                    <div class="mb-4">
+                        <label for="demand-name" class="block text-sm font-medium mb-1">Nome da Demanda</label>
+                        <input id="demand-name" type="text" required class="w-full p-2">
+                    </div>
+                    <div class="mb-4">
+                        <label for="demand-description" class="block text-sm font-medium mb-1">Descrição</label>
+                        <textarea id="demand-description" rows="3" class="w-full p-2"></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center">
+                            <label class="block text-sm font-medium mb-1">Tarefas da Demanda</label>
+                            <button type="button" id="open-predefined-tasks-modal" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-plus"></i> Adicionar Tarefa Pré-definida
+                            </button>
+                        </div>
+                        <div id="demand-tasks-container" class="mt-2 space-y-2 max-h-40 overflow-y-auto p-2 border border-border-color rounded-md min-h-[50px]">
+                            <!-- Tarefas da demanda serão adicionadas aqui -->
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <label for="new-demand-task-input" class="block text-sm font-medium mb-1">Adicionar Tarefa Manual</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="new-demand-task-input" placeholder="Adicionar nova tarefa manual" class="flex-grow p-2">
+                            <button type="button" id="add-manual-task-button" class="btn btn-secondary">Adicionar</button>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" id="cancel-demand-button" class="btn btn-secondary">Cancelar</button>
+                        <button type="submit" id="save-demand-button" class="btn btn-primary w-32 text-center">
+                            <span class="button-text">Salvar</span>
+                            <i class="fas fa-spinner fa-spin hidden button-spinner"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal para Selecionar Tarefas Pré-definidas -->
+        <div id="predefined-tasks-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50">
+            <div class="card p-6 rounded-xl shadow-xl w-full max-w-md">
+                <h3 class="text-xl font-bold mb-4">Selecionar Tarefas Pré-definidas</h3>
+                <div id="predefined-tasks-list" class="space-y-2 max-h-60 overflow-y-auto mb-6">
+                    <!-- Lista de tarefas pré-definidas com checkboxes -->
+                    <p class="text-secondary text-center p-4">Nenhuma tarefa pré-definida encontrada.</p>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" id="cancel-select-tasks-button" class="btn btn-secondary">Cancelar</button>
+                    <button type="button" id="add-selected-tasks-button" class="btn btn-primary">Adicionar Selecionadas</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Editar Tarefa (Movido de company-dashboard) -->
+        <div id="edit-task-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50">
+            <div class="card p-6 rounded-xl shadow-xl w-full max-w-sm">
+                <h3 class="text-xl font-bold mb-4">Editar Tarefa</h3>
+                <form id="edit-task-form">
+                    <input type="hidden" id="edit-task-id">
+                    <div class="mb-6">
+                        <label for="edit-task-name" class="block text-sm font-medium mb-1">Nome da Tarefa</label>
+                        <input id="edit-task-name" type="text" required class="w-full p-2">
+                    </div>
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" id="cancel-edit-task-button" class="btn btn-secondary">Cancelar</button>
+                        <button type="submit" id="save-edit-task-button" class="btn btn-primary w-24 text-center">
+                            <span class="button-text">Salvar</span>
+                            <i class="fas fa-spinner fa-spin hidden button-spinner"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal de Perfil (Reutilizável) -->
+        <div id="profile-modal" class="dropdown-menu hidden z-40 !right-8 !top-[70px]">
+            <div class="card p-4 w-full max-w-xs">
+                <div id="user-view" class="space-y-3">
+                    <div class="text-sm">
+                        <p class="font-semibold" id="user-email-display">carregando...</p>
+                        <div id="verification-status" class="text-xs mt-1"></div>
+                    </div>
+                    <hr class="border-border-color">
+                    <a href="settings.html" class="block text-sm hover:text-primary"><i class="fas fa-cog w-6"></i> Configurações</a>
+                    <a href="#" id="logout-button" class="block text-sm hover:text-primary"><i class="fas fa-sign-out-alt w-6"></i> Sair</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Mensagem -->
+        <div id="message-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50 p-4">
+            <div class="card p-6 rounded-xl shadow-xl w-full max-w-sm text-center">
+                <p id="message-text" class="text-lg font-semibold mb-4"></p>
+                <div id="message-buttons" class="flex justify-center space-x-4">
+                    <button id="message-ok" class="btn btn-primary">OK</button>
+                    <button id="message-cancel" class="btn btn-secondary hidden">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/demands.js"></script>
+</body>
+</html>

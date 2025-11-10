@@ -297,7 +297,8 @@ input[type="password"],
 input[type="number"],
 input[type="date"],
 input[type="search"],
-select {
+select,
+textarea {
     background-color: var(--bg-main);
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -306,7 +307,7 @@ select {
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-input:focus, select:focus {
+input:focus, select:focus, textarea:focus {
     outline: none;
     border-color: var(--accent-purple);
     box-shadow: 0 0 0 3px rgba(138, 92, 246, 0.2);
@@ -394,6 +395,12 @@ input[type=number] {
     background-color: rgba(30, 27, 41, 0.5); /* Cor sólida com transparência */
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
+}
+
+/* Garante que o texto dentro dos modais seja branco no tema escuro */
+html.dark .modal-backdrop .card,
+html.dark .dropdown-menu .card {
+    color: var(--text-primary); /* --text-primary é #ffffff no tema escuro */
 }
 
 html:not(.dark) .modal-backdrop {
@@ -599,4 +606,54 @@ html:not(.dark) .section-bg {
     background-color: var(--accent-purple);
     color: #ffffff;
     border-color: var(--accent-purple);
+}
+
+/* --- Estilos para a Tabela de Planos (plans.html) --- */
+.plan-highlight-header {
+    background-color: var(--bg-highlight-plan-header);
+    border-left: 2px solid var(--accent-purple);
+    border-right: 2px solid var(--accent-purple);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    position: relative; /* Para o badge "Popular" */
+    z-index: 1; /* Garante que a coluna esteja acima das outras */
+}
+
+.plan-highlight-cell {
+    background-color: var(--bg-highlight-plan-cell);
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+}
+
+html.dark .plan-highlight-header {
+    --bg-highlight-plan-header: rgba(138, 92, 246, 0.25); /* Roxo mais forte para o cabeçalho escuro */
+}
+html:not(.dark) .plan-highlight-header {
+    --bg-highlight-plan-header: rgba(96, 81, 155, 0.15); /* Roxo mais claro para o cabeçalho claro */
+}
+
+html.dark .plan-highlight-cell {
+    --bg-highlight-plan-cell: rgba(138, 92, 246, 0.1); /* Roxo sutil para células escuras */
+}
+html:not(.dark) .plan-highlight-cell {
+    --bg-highlight-plan-cell: rgba(96, 81, 155, 0.05); /* Roxo muito sutil para células claras */
+}
+
+/* --- Estilos para o Acordeão de Planos (plans.html) --- */
+.plan-summary {
+    list-style: none; /* Remove o marcador padrão do <summary> */
+}
+.plan-summary::-webkit-details-marker {
+    display: none; /* Remove o marcador no Chrome/Safari */
+}
+.plan-summary::after {
+    content: '\f078'; /* Ícone de chevron para baixo do Font Awesome */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    float: right;
+    transition: transform 0.2s;
+    margin-left: 1rem;
+}
+.plan-details[open] > .plan-summary::after {
+    transform: rotate(180deg); /* Gira o ícone quando aberto */
+}
 }

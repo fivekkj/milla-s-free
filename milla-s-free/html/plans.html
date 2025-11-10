@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planos e Preços - Milla's Free</title>
+    <link rel="icon" href="../imagens/milasclock.png" type="image/png" sizes="any">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    <script>
+        // Aplica o tema (claro/escuro) para evitar FOUC (Flash of Unstyled Content)
+        (function() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="section-bg">
+
+    <!-- Header Simplificado -->
+    <header class="landing-header sticky top-0 z-50 text-primary">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="landing.html" class="h-12 w-48">
+                <img src="../imagens/millasfull.png" alt="Milla's Free Logo" class="sidebar-logo block dark:hidden">
+                <img src="../imagens/millas_escuro.png" alt="Milla's Free Logo" class="sidebar-logo-dark hidden dark:block">
+            </a>
+            <div class="flex items-center space-x-4">
+                <a href="landing.html" class="font-semibold hover:text-white">
+                    <i class="fas fa-arrow-left mr-2"></i>Voltar à Página Inicial
+                </a>
+                <button id="theme-toggle" aria-label="Alternar tema claro/escuro" class="text-xl p-2 rounded-full transition-colors">
+                    <i class="fas fa-sun"></i>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="py-16 px-6">
+        <div class="container mx-auto">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-extrabold mb-3">Encontre o Plano Perfeito para Sua Equipe</h1>
+                <p class="text-lg text-secondary max-w-3xl mx-auto">Compare as funcionalidades e escolha o plano que melhor se adapta ao crescimento do seu negócio.</p>
+            </div>
+
+            <!-- Seção de Planos Acordeão -->
+            <div class="max-w-4xl mx-auto space-y-4">
+
+                <!-- Plano Básico -->
+                <details class="card plan-details overflow-hidden">
+                    <summary class="plan-summary cursor-pointer p-6 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold">Básico</h3>
+                            <p class="text-secondary">Ideal para freelancers e pequenas equipes.</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-3xl font-extrabold">R$19<span class="text-lg">,90</span></p>
+                            <p class="text-sm text-secondary">/mês</p>
+                        </div>
+                    </summary>
+                    <div class="plan-content p-6 border-t border-border-color">
+                        <h4 class="font-bold text-lg mb-4">O que está incluído no Plano Básico:</h4>
+                        <p class="text-secondary mb-4">Este plano é a porta de entrada para a organização. Ele oferece as ferramentas essenciais para que você ou sua pequena equipe comecem a rastrear o tempo de forma eficiente, garantindo que nenhum minuto de trabalho seja perdido.</p>
+                        <ul class="space-y-3 text-secondary">
+                            <li><strong class="text-primary">Até 3 Membros:</strong> Perfeito para um freelancer com assistentes ou uma equipe muito pequena. Cada membro recebe um token de acesso individual para registrar seu próprio tempo.</li>
+                            <li><strong class="text-primary">Gestão de Tarefas Pré-definidas:</strong> Crie uma lista de tarefas comuns (ex: "Reunião com Cliente", "Desenvolvimento Frontend", "Design de UI"). Isso padroniza os registros e acelera o processo de apontamento para toda a equipe.</li>
+                            <li><strong class="text-primary">Rastreamento de Tempo (Time Tracker):</strong> O coração do sistema. Um cronômetro simples e intuitivo que permite a cada membro iniciar e parar o registro de tempo em uma tarefa específica com apenas um clique.</li>
+                            <li><strong class="text-primary">Suporte via E-mail:</strong> Se tiver qualquer dúvida sobre o uso da plataforma, nossa equipe de suporte estará disponível para ajudar por e-mail.</li>
+                        </ul>
+                        <a href="payment.html?plan=Básico" class="btn btn-secondary w-full mt-6">Assinar Plano Básico</a>
+                    </div>
+                </details>
+
+                <!-- Plano Essencial -->
+                <details class="card plan-details overflow-hidden border-2 border-primary shadow-lg" open>
+                    <summary class="plan-summary cursor-pointer p-6 flex justify-between items-center relative">
+                        <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-black font-bold px-3 py-1 rounded-full text-sm whitespace-nowrap">ESCOLHA POPULAR</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-primary">Essencial</h3>
+                            <p class="text-secondary">Para equipes em crescimento que precisam de mais controle.</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-3xl font-extrabold text-primary">R$49<span class="text-lg">,90</span></p>
+                            <p class="text-sm text-secondary">/mês</p>
+                        </div>
+                    </summary>
+                    <div class="plan-content p-6 border-t border-border-color">
+                        <h4 class="font-bold text-lg mb-4">Tudo do Plano Básico, e mais:</h4>
+                        <p class="text-secondary mb-4">O Plano Essencial é a nossa recomendação para a maioria das agências e pequenas empresas. Ele introduz camadas de gerenciamento e análise que transformam o simples rastreamento de tempo em uma poderosa ferramenta de gestão de projetos e produtividade.</p>
+                        <ul class="space-y-3 text-secondary">
+                            <li><strong class="text-primary">Até 10 Membros:</strong> Escale sua equipe sem preocupações. Gerencie um time maior com a mesma facilidade.</li>
+                            <li><strong class="text-primary">Gestão de Demandas:</strong> Crie "Demandas" que funcionam como projetos ou épicos. Agrupe várias tarefas pré-definidas dentro de uma demanda para organizar o trabalho de forma macro e ter uma visão clara do andamento de projetos inteiros.</li>
+                            <li><strong class="text-primary">Aprovação de Horas pelo Gestor:</strong> Todo tempo registrado por um colaborador entra no sistema como "Pendente". O gestor tem um painel centralizado para revisar, aprovar ou rejeitar cada entrada de tempo, garantindo controle total sobre as horas faturáveis e a produtividade da equipe.</li>
+                            <li><strong class="text-primary">Relatórios Básicos:</strong> Tenha acesso a gráficos e relatórios que mostram a distribuição de horas por projeto e por membro da equipe. Identifique rapidamente onde o tempo do seu time está sendo investido e tome decisões mais inteligentes.</li>
+                        </ul>
+                        <a href="payment.html?plan=Essencial" class="btn btn-primary w-full mt-6">Assinar Plano Essencial</a>
+                    </div>
+                </details>
+
+                <!-- Plano Profissional -->
+                <details class="card plan-details overflow-hidden">
+                    <summary class="plan-summary cursor-pointer p-6 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold">Profissional</h3>
+                            <p class="text-secondary">A solução completa para empresas que levam dados a sério.</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-3xl font-extrabold">R$99<span class="text-lg">,90</span></p>
+                            <p class="text-sm text-secondary">/mês</p>
+                        </div>
+                    </summary>
+                    <div class="plan-content p-6 border-t border-border-color">
+                        <h4 class="font-bold text-lg mb-4">Tudo do Plano Essencial, e mais:</h4>
+                        <p class="text-secondary mb-4">O Plano Profissional é para empresas que precisam de total controle, escalabilidade e insights profundos sobre sua operação. Ele oferece ferramentas avançadas de análise e suporte para garantir que sua empresa opere com máxima eficiência.</p>
+                        <ul class="space-y-3 text-secondary">
+                            <li><strong class="text-primary">Membros Ilimitados:</strong> Não há limites para o crescimento da sua equipe. Adicione quantos colaboradores, freelancers ou departamentos você precisar.</li>
+                            <li><strong class="text-primary">Relatórios Avançados com Filtros:</strong> Vá além dos relatórios básicos. Filtre dados por período, membro ou projeto específico. Analise tendências de produtividade ao longo do tempo para prever gargalos e planejar melhor seus recursos.</li>
+                            <li><strong class="text-primary">Exportação de Dados (CSV):</strong> Exporte todos os seus dados de membros e entradas de tempo para arquivos CSV. Use esses dados em outras ferramentas de BI, para faturamento detalhado ou para seus próprios registros de auditoria.</li>
+                            <li><strong class="text-primary">Suporte Prioritário:</strong> Tenha acesso direto à nossa equipe de suporte por telefone e chat em tempo real. Suas dúvidas e problemas são nossa prioridade máxima.</li>
+                        </ul>
+                        <a href="payment.html?plan=Profissional" class="btn btn-secondary w-full mt-6">Assinar Plano Profissional</a>
+                    </div>
+                </details>
+
+            </div>
+
+            <!-- Seção de Contato -->
+            <div class="card mt-12 bg-gradient-to-br from-primary to-purple-800 text-white p-8">
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 class="text-3xl font-bold mb-2">Dúvidas ou precisa de um plano personalizado?</h3>
+                        <p class="opacity-80">Nossa equipe está pronta para ajudar a encontrar a solução perfeita para sua empresa. Entre em contato para discutir suas necessidades.</p>
+                    </div>
+                    <div>
+                        <form id="contact-form">
+                            <div class="space-y-4">
+                                <input type="text" placeholder="Seu Nome" class="w-full p-2" autocomplete="off">
+                                <input type="email" placeholder="Seu E-mail" class="w-full p-2" autocomplete="off">
+                                <textarea rows="3" placeholder="Sua mensagem..." class="w-full p-2"></textarea>
+                                <button type="submit" class="btn btn-secondary w-full">Enviar Contato</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-8 px-6 mt-16">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2025 Milla's Free. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script type="module" src="../js/theme-manager.js"></script>
+    <script>
+        // Script para simular o envio do formulário de contato
+        document.addEventListener('DOMContentLoaded', () => {
+            const details = document.querySelectorAll('.plan-details');
+
+            details.forEach(targetDetail => {
+                targetDetail.addEventListener('click', () => {
+                    // Fecha todos os outros <details> quando um é aberto
+                    details.forEach(detail => {
+                        if (detail !== targetDetail) {
+                            detail.removeAttribute('open');
+                        }
+                    });
+                });
+            });
+        });
+
+        document.getElementById('contact-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Obrigado pelo seu contato! (Esta é uma demonstração e nenhuma mensagem foi enviada).');
+            e.target.reset();
+        });
+    </script>
+
+</body>
+</html>
